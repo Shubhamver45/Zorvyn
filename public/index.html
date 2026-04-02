@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zorvyn Finance — Premium Access</title>
+  <meta name="description" content="Zorvyn Finance premium dashboard. Manage your financial data flawlessly." />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+
+  <!-- Ambient Background -->
+  <div class="ambient-background">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <main id="app-container">
+    
+    <!-- Login View -->
+    <section id="login-view" class="view active-view">
+      <div class="glass-card login-card">
+        <div class="brand">
+          <div class="logo">Z</div>
+          <h1>Zorvyn</h1>
+        </div>
+        <p class="subtitle">Enter your credentials to access the portal</p>
+        
+        <form id="login-form">
+          <div class="input-group">
+            <label for="email">Email address</label>
+            <input type="email" id="email" value="admin@zorvyn.dev" required autocomplete="email" />
+          </div>
+          <div class="input-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" value="Admin@1234" required autocomplete="current-password" />
+          </div>
+          
+          <div id="login-error" class="error-msg"></div>
+          
+          <button type="submit" class="btn primary-btn btn-animate" id="login-btn">
+            <span>Sign In</span>
+          </button>
+        </form>
+        
+        <div class="test-credentials">
+          <p>Demo accounts (Role):</p>
+          <ul>
+            <li>admin@zorvyn.dev / Admin@1234</li>
+            <li>analyst@zorvyn.dev / Analyst@1234</li>
+            <li>viewer@zorvyn.dev / Viewer@1234</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard View -->
+    <section id="dashboard-view" class="view">
+      
+      <!-- Sidebar -->
+      <nav class="sidebar glass-panel">
+        <div class="sidebar-header brand">
+          <div class="logo small">Z</div>
+          <h2>Zorvyn</h2>
+        </div>
+        
+        <div class="user-profile">
+          <div class="avatar" id="user-avatar">A</div>
+          <div class="user-info">
+            <h3 id="user-name">User Name</h3>
+            <span class="badge role-badge" id="user-role">Role</span>
+          </div>
+        </div>
+        
+        <ul class="nav-links">
+          <li class="active"><a href="#">Overview</a></li>
+          <li><a href="#">Transactions</a></li>
+          <li><a href="#">Analytics</a></li>
+          <li><a href="#">Settings</a></li>
+        </ul>
+        
+        <div class="sidebar-footer">
+          <button id="logout-btn" class="btn ghost-btn">
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <header class="top-nav">
+          <h1 class="page-title">Financial Overview</h1>
+          <div class="period-selector">
+            <button class="pill-btn active" data-period="week">Week</button>
+            <button class="pill-btn" data-period="month">Month</button>
+            <button class="pill-btn" data-period="year">Year</button>
+          </div>
+        </header>
+
+        <div class="dashboard-grid">
+          
+          <!-- Summary Cards -->
+          <div class="summary-cards">
+            <div class="glass-card stat-card glow-blue">
+              <span class="stat-icon">📈</span>
+              <div class="stat-info">
+                <h3>Total Income</h3>
+                <p class="stat-value text-accent-green" id="stat-income">$0.00</p>
+              </div>
+            </div>
+            <div class="glass-card stat-card glow-purple">
+              <span class="stat-icon">📉</span>
+              <div class="stat-info">
+                <h3>Total Expenses</h3>
+                <p class="stat-value text-accent-red" id="stat-expense">$0.00</p>
+              </div>
+            </div>
+            <div class="glass-card stat-card glow-cyan highlight">
+              <span class="stat-icon">💳</span>
+              <div class="stat-info">
+                <h3>Net Balance</h3>
+                <p class="stat-value text-glow" id="stat-balance">$0.00</p>
+              </div>
+            </div>
+            <div class="glass-card stat-card glow-pink">
+              <span class="stat-icon">📋</span>
+              <div class="stat-info">
+                <h3>Transactions</h3>
+                <p class="stat-value" id="stat-count">0</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Section: Category Breakdown + Recent Activity -->
+          <div class="bottom-grid">
+            
+            <div class="glass-card full-height">
+              <div class="card-header">
+                <h3>Category Breakdown</h3>
+              </div>
+              <div class="category-list" id="category-container">
+                <!-- dynamic items map here -->
+              </div>
+            </div>
+            
+            <div class="glass-card full-height span-2">
+              <div class="card-header">
+                <h3>Recent Activity</h3>
+                <button class="btn icon-btn" id="refresh-btn">🔄</button>
+              </div>
+              <div class="table-container">
+                <table class="premium-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Description</th>
+                      <th>Category</th>
+                      <th>By</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody id="activity-table-body">
+                    <!-- dynamic rows map here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="./js/app.js"></script>
+</body>
+</html>

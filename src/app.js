@@ -4,6 +4,7 @@ const express = require('express');
 const cors    = require('cors');
 const helmet  = require('helmet');
 const morgan  = require('morgan');
+const path    = require('path');
 
 const authRoutes    = require('./routes/auth.routes');
 const userRoutes    = require('./routes/user.routes');
@@ -27,6 +28,9 @@ if (process.env.NODE_ENV !== 'test') {
 
 // ── Rate Limiting ────────────────────────────────────────────────────────────
 app.use('/api', limiter);
+
+// ── Static Frontend Server ───────────────────────────────────────────────────
+app.use(express.static(path.join(__dirname, '../public')));
 
 // ── Health Check ─────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
