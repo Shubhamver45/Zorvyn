@@ -1,0 +1,61 @@
+// Prisma schema for Zorvyn Finance Backend
+// Using SQLite for simplicity and portability
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+// User roles with hierarchical access
+// VIEWER  → read-only dashboard data
+// ANALYST → read records + insights
+// ADMIN   → full management
+
+// SQLite doesn't support enums natively, so we store as String
+// and validate at the application layer.
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String   // bcrypt hashed
+  role      String   @default("VIEWER") // VIEWER | ANALYST | ADMIN
+  status    String   @default("ACTIVE") // ACTIVE | INACTIVE
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  records   FinancialRecord[]
+  tokens    RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model FinancialRecord {
+  id          String   @id @default(cuid())
+  amount      Float
+  type        String   // INCOME | EXPENSE
+  category    String   // e.g. "Salary", "Food", "Utilities", "Investment"
+  date        DateTime
+  description String?
+  tags        String?  // JSON-serialised string array for SQLite
+  isDeleted   Boolean  @default(false)  // soft delete
+  createdBy   String
+  author      User     @relation(fields: [createdBy], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
