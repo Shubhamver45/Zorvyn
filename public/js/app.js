@@ -68,13 +68,25 @@ function bindRegister() {
     const password = el('reg-password').value;
     const confirm  = el('reg-confirm').value;
 
-    // Client-side validation
+    // Client-side validation — mirror backend Zod rules exactly
+    if (!name || name.length < 2) {
+      errEl.textContent = 'Name must be at least 2 characters.';
+      return;
+    }
     if (password !== confirm) {
       errEl.textContent = 'Passwords do not match.';
       return;
     }
     if (password.length < 8) {
       errEl.textContent = 'Password must be at least 8 characters.';
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      errEl.textContent = 'Password must contain at least one uppercase letter (e.g. A-Z).';
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      errEl.textContent = 'Password must contain at least one number (e.g. 1-9).';
       return;
     }
 
@@ -96,12 +108,20 @@ function bindRegister() {
         localStorage.setItem('zorvyn_user', JSON.stringify(currentUser));
         revealDashboard();
       } else {
-        // Registration succeeded, prompt manual login
         el('tab-login').click();
         toast('Account created! Please sign in.', 'success');
       }
     } else {
-      errEl.textContent = data?.message || 'Registration failed. Try a different email.';
+      // Extract the most helpful error message possible
+      let msg = 'Registration failed.';
+      if (data?.errors?.length) {
+        // Zod field errors — join all messages
+        msg = data.errors.map(e => e.message).join(' · ');
+      } else if (data?.message) {
+        // Duplicate email or other server-level error
+        msg = data.message;
+      }
+      errEl.textContent = msg;
     }
   });
 }
