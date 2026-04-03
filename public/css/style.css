@@ -482,7 +482,6 @@ body {
    ── SETTINGS PAGE ───────────────────────────
 ══════════════════════════════════════════════ */
 .settings-stack { display: flex; flex-direction: column; gap: 18px; }
-.profile-panel {}
 .profile-row { display: flex; align-items: center; gap: 22px; padding: 24px; }
 .profile-avatar {
   width: 64px; height: 64px; border-radius: 50%;
@@ -583,6 +582,45 @@ body {
 /* ══════════════════════════════════════════════
    ── SCROLLBAR ───────────────────────────────
 ══════════════════════════════════════════════ */
+/* Auth Tabs */
+.auth-tabs {
+  display: flex;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 24px;
+  gap: 4px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 10px;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  color: var(--txt-2);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.auth-tab:hover { color: var(--txt); background: rgba(255,255,255,0.05); }
+.auth-tab.active {
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  color: #fff;
+  box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+.hidden-panel { display: none; }
+.hidden-panel.visible { display: block; }
+#login-panel.hidden-panel { display: none; }
+
+/* Scrollable login card on small screens */
+.login-card { overflow-y: auto; max-height: 95vh; }
+
+/* Register form spacing */
+#register-form .field-group { margin-bottom: 10px; }
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }

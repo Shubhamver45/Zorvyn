@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (token && currentUser) { revealDashboard(); }
   else { showView('login'); }
   bindLogin();
+  bindAuthTabs();
+  bindRegister();
 });
 
 // ── View Control ──────────────────────────────────────────────────────────────
@@ -29,7 +31,82 @@ function showPage(name) {
   });
 }
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
+// ── Auth Tab Switching ────────────────────────────────────────────────────────
+function bindAuthTabs() {
+  const tabLogin    = el('tab-login');
+  const tabRegister = el('tab-register');
+  const loginPanel  = el('login-panel');
+  const regPanel    = el('register-panel');
+
+  tabLogin.addEventListener('click', () => {
+    tabLogin.classList.add('active');
+    tabRegister.classList.remove('active');
+    loginPanel.classList.remove('hidden-panel');
+    regPanel.classList.remove('visible');
+    regPanel.classList.add('hidden-panel');
+  });
+
+  tabRegister.addEventListener('click', () => {
+    tabRegister.classList.add('active');
+    tabLogin.classList.remove('active');
+    regPanel.classList.remove('hidden-panel');
+    regPanel.classList.add('visible');
+    loginPanel.classList.add('hidden-panel');
+  });
+}
+
+// ── Register ──────────────────────────────────────────────────────────────────
+function bindRegister() {
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = el('register-error');
+    const btn   = el('register-btn-text');
+    errEl.textContent = '';
+
+    const name     = el('reg-name').value.trim();
+    const email    = el('reg-email').value.trim();
+    const password = el('reg-password').value;
+    const confirm  = el('reg-confirm').value;
+
+    // Client-side validation
+    if (password !== confirm) {
+      errEl.textContent = 'Passwords do not match.';
+      return;
+    }
+    if (password.length < 8) {
+      errEl.textContent = 'Password must be at least 8 characters.';
+      return;
+    }
+
+    btn.textContent = 'Creating account…';
+    el('register-btn').disabled = true;
+
+    const data = await post('/auth/register', { name, email, password });
+
+    btn.textContent = 'Create Account';
+    el('register-btn').disabled = false;
+
+    if (data?.success) {
+      // Auto-login with new credentials
+      const loginData = await post('/auth/login', { email, password });
+      if (loginData?.success) {
+        token = loginData.data.accessToken;
+        currentUser = loginData.data.user;
+        localStorage.setItem('zorvyn_token', token);
+        localStorage.setItem('zorvyn_user', JSON.stringify(currentUser));
+        revealDashboard();
+      } else {
+        // Registration succeeded, prompt manual login
+        el('tab-login').click();
+        toast('Account created! Please sign in.', 'success');
+      }
+    } else {
+      errEl.textContent = data?.message || 'Registration failed. Try a different email.';
+    }
+  });
+}
+
+// ── Auth (Login) ──────────────────────────────────────────────────────────────
 function bindLogin() {
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
