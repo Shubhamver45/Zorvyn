@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Zorvyn Finance — Premium Access</title>
-  <meta name="description" content="Zorvyn Finance premium dashboard. Manage your financial data flawlessly." />
-  
+  <title>Zorvyn Finance Dashboard</title>
+  <meta name="description" content="Zorvyn Finance — premium multi-role financial management dashboard." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
@@ -21,36 +19,82 @@
     <div class="blob blob-3"></div>
   </div>
 
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Add/Edit Record Modal -->
+  <div id="record-modal" class="modal-overlay hidden">
+    <div class="modal-box glass-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Add Record</h3>
+        <button class="icon-close-btn" id="modal-close">✕</button>
+      </div>
+      <form id="record-form">
+        <input type="hidden" id="rec-id" />
+        <div class="form-grid">
+          <div class="input-group">
+            <label>Amount (₹)</label>
+            <input type="number" id="rec-amount" placeholder="e.g. 5000" required min="0.01" step="0.01"/>
+          </div>
+          <div class="input-group">
+            <label>Type</label>
+            <select id="rec-type">
+              <option value="INCOME">Income</option>
+              <option value="EXPENSE">Expense</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Category</label>
+            <select id="rec-category">
+              <option>Salary</option><option>Freelance</option><option>Bonus</option>
+              <option>Investment</option><option>Rent</option><option>Utilities</option>
+              <option>Groceries</option><option>Transport</option><option>Healthcare</option>
+              <option>Education</option><option>Entertainment</option><option>Travel</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Date</label>
+            <input type="date" id="rec-date" required />
+          </div>
+          <div class="input-group span-2">
+            <label>Description</label>
+            <input type="text" id="rec-desc" placeholder="Optional notes..." maxlength="500"/>
+          </div>
+        </div>
+        <div id="modal-error" class="error-msg"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn ghost-btn" id="modal-cancel">Cancel</button>
+          <button type="submit" class="btn primary-btn" id="modal-save">Save Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <main id="app-container">
-    
-    <!-- Login View -->
+
+    <!-- ── LOGIN VIEW ─────────────────────────────────────────── -->
     <section id="login-view" class="view active-view">
       <div class="glass-card login-card">
         <div class="brand">
           <div class="logo">Z</div>
           <h1>Zorvyn</h1>
         </div>
-        <p class="subtitle">Enter your credentials to access the portal</p>
-        
+        <p class="subtitle">Sign in to your Finance Portal</p>
         <form id="login-form">
           <div class="input-group">
-            <label for="email">Email address</label>
-            <input type="email" id="email" value="admin@zorvyn.dev" required autocomplete="email" />
+            <label>Email address</label>
+            <input type="email" id="email" value="admin@zorvyn.dev" required autocomplete="email"/>
           </div>
           <div class="input-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" value="Admin@1234" required autocomplete="current-password" />
+            <label>Password</label>
+            <input type="password" id="password" value="Admin@1234" required autocomplete="current-password"/>
           </div>
-          
           <div id="login-error" class="error-msg"></div>
-          
-          <button type="submit" class="btn primary-btn btn-animate" id="login-btn">
-            <span>Sign In</span>
-          </button>
+          <button type="submit" class="btn primary-btn" id="login-btn"><span>Sign In</span></button>
         </form>
-        
         <div class="test-credentials">
-          <p>Demo accounts (Role):</p>
+          <p>Demo accounts:</p>
           <ul>
             <li>admin@zorvyn.dev / Admin@1234</li>
             <li>analyst@zorvyn.dev / Analyst@1234</li>
@@ -60,72 +104,66 @@
       </div>
     </section>
 
-    <!-- Dashboard View -->
+    <!-- ── DASHBOARD VIEW ─────────────────────────────────────── -->
     <section id="dashboard-view" class="view">
-      
+
       <!-- Sidebar -->
       <nav class="sidebar glass-panel">
         <div class="sidebar-header brand">
           <div class="logo small">Z</div>
           <h2>Zorvyn</h2>
         </div>
-        
         <div class="user-profile">
           <div class="avatar" id="user-avatar">A</div>
           <div class="user-info">
-            <h3 id="user-name">User Name</h3>
-            <span class="badge role-badge" id="user-role">Role</span>
+            <h3 id="user-name">User</h3>
+            <span class="badge role-badge" id="user-role">ROLE</span>
           </div>
         </div>
-        
-        <ul class="nav-links">
-          <li class="active"><a href="#">Overview</a></li>
-          <li><a href="#">Transactions</a></li>
-          <li><a href="#">Analytics</a></li>
-          <li><a href="#">Settings</a></li>
+        <ul class="nav-links" id="nav-links">
+          <li class="active" data-page="overview"><a href="#">Overview</a></li>
+          <li data-page="transactions"><a href="#">Transactions</a></li>
+          <li data-page="analytics"><a href="#">Analytics</a></li>
+          <li data-page="settings" id="settings-nav-item"><a href="#">Settings</a></li>
         </ul>
-        
         <div class="sidebar-footer">
-          <button id="logout-btn" class="btn ghost-btn">
-            Logout
-          </button>
+          <button id="logout-btn" class="btn ghost-btn">Logout</button>
         </div>
       </nav>
 
       <!-- Main Content -->
       <div class="main-content">
-        <header class="top-nav">
-          <h1 class="page-title">Financial Overview</h1>
-          <div class="period-selector">
-            <button class="pill-btn active" data-period="week">Week</button>
-            <button class="pill-btn" data-period="month">Month</button>
-            <button class="pill-btn" data-period="year">Year</button>
-          </div>
-        </header>
 
-        <div class="dashboard-grid">
-          
-          <!-- Summary Cards -->
+        <!-- ── OVERVIEW PAGE ── -->
+        <div id="page-overview" class="page active-page">
+          <header class="top-nav">
+            <h1 class="page-title">Financial Overview</h1>
+            <div class="period-selector">
+              <button class="pill-btn active" data-period="week">Week</button>
+              <button class="pill-btn" data-period="month">Month</button>
+              <button class="pill-btn" data-period="year">Year</button>
+            </div>
+          </header>
           <div class="summary-cards">
             <div class="glass-card stat-card glow-blue">
               <span class="stat-icon">📈</span>
               <div class="stat-info">
                 <h3>Total Income</h3>
-                <p class="stat-value text-accent-green" id="stat-income">$0.00</p>
+                <p class="stat-value text-accent-green" id="stat-income">₹0.00</p>
               </div>
             </div>
             <div class="glass-card stat-card glow-purple">
               <span class="stat-icon">📉</span>
               <div class="stat-info">
                 <h3>Total Expenses</h3>
-                <p class="stat-value text-accent-red" id="stat-expense">$0.00</p>
+                <p class="stat-value text-accent-red" id="stat-expense">₹0.00</p>
               </div>
             </div>
             <div class="glass-card stat-card glow-cyan highlight">
               <span class="stat-icon">💳</span>
               <div class="stat-info">
                 <h3>Net Balance</h3>
-                <p class="stat-value text-glow" id="stat-balance">$0.00</p>
+                <p class="stat-value text-glow" id="stat-balance">₹0.00</p>
               </div>
             </div>
             <div class="glass-card stat-card glow-pink">
@@ -136,19 +174,11 @@
               </div>
             </div>
           </div>
-
-          <!-- Bottom Section: Category Breakdown + Recent Activity -->
           <div class="bottom-grid">
-            
             <div class="glass-card full-height">
-              <div class="card-header">
-                <h3>Category Breakdown</h3>
-              </div>
-              <div class="category-list" id="category-container">
-                <!-- dynamic items map here -->
-              </div>
+              <div class="card-header"><h3>Category Breakdown</h3></div>
+              <div class="category-list" id="category-container"></div>
             </div>
-            
             <div class="glass-card full-height span-2">
               <div class="card-header">
                 <h3>Recent Activity</h3>
@@ -156,25 +186,155 @@
               </div>
               <div class="table-container">
                 <table class="premium-table">
+                  <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>By</th><th>Amount</th></tr></thead>
+                  <tbody id="activity-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── TRANSACTIONS PAGE ── -->
+        <div id="page-transactions" class="page">
+          <header class="top-nav">
+            <h1 class="page-title">Transactions</h1>
+            <button class="btn primary-btn" id="add-record-btn" style="width:auto;padding:10px 22px;">+ Add Record</button>
+          </header>
+
+          <!-- Filters Bar -->
+          <div class="glass-card filters-bar">
+            <input type="text" class="filter-input" id="filter-search" placeholder="🔍  Search description..." />
+            <select class="filter-input" id="filter-type">
+              <option value="">All Types</option>
+              <option value="INCOME">Income</option>
+              <option value="EXPENSE">Expense</option>
+            </select>
+            <select class="filter-input" id="filter-category">
+              <option value="">All Categories</option>
+              <option>Salary</option><option>Freelance</option><option>Bonus</option>
+              <option>Investment</option><option>Rent</option><option>Utilities</option>
+              <option>Groceries</option><option>Transport</option><option>Healthcare</option>
+              <option>Education</option><option>Entertainment</option><option>Travel</option><option>Other</option>
+            </select>
+            <input type="date" class="filter-input" id="filter-start" />
+            <input type="date" class="filter-input" id="filter-end" />
+            <button class="btn ghost-btn" id="filter-reset" style="padding:10px 18px;font-size:13px;">Reset</button>
+          </div>
+
+          <div class="glass-card">
+            <div class="table-container">
+              <table class="premium-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="transactions-table-body">
+                  <tr><td colspan="6" class="loading-cell">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- Pagination -->
+            <div class="pagination-bar" id="pagination-bar">
+              <button class="btn ghost-btn pag-btn" id="pag-prev" disabled>← Prev</button>
+              <span id="pag-info" class="pag-info">Page 1</span>
+              <button class="btn ghost-btn pag-btn" id="pag-next">Next →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ANALYTICS PAGE ── -->
+        <div id="page-analytics" class="page">
+          <header class="top-nav">
+            <h1 class="page-title">Analytics</h1>
+            <div class="period-selector">
+              <button class="pill-btn active" data-period="3">3 Months</button>
+              <button class="pill-btn" data-period="6">6 Months</button>
+              <button class="pill-btn" data-period="12">12 Months</button>
+            </div>
+          </header>
+
+          <!-- Analytics Summary Cards -->
+          <div class="summary-cards" id="analytics-cards">
+            <div class="glass-card stat-card glow-blue">
+              <span class="stat-icon">📈</span>
+              <div class="stat-info"><h3>Total Income</h3><p class="stat-value text-accent-green" id="an-income">₹0</p></div>
+            </div>
+            <div class="glass-card stat-card glow-purple">
+              <span class="stat-icon">📉</span>
+              <div class="stat-info"><h3>Total Expenses</h3><p class="stat-value text-accent-red" id="an-expense">₹0</p></div>
+            </div>
+            <div class="glass-card stat-card glow-cyan highlight">
+              <span class="stat-icon">💰</span>
+              <div class="stat-info"><h3>Net Balance</h3><p class="stat-value text-glow" id="an-balance">₹0</p></div>
+            </div>
+            <div class="glass-card stat-card glow-pink">
+              <span class="stat-icon">📊</span>
+              <div class="stat-info"><h3>Savings Rate</h3><p class="stat-value" id="an-rate">0%</p></div>
+            </div>
+          </div>
+
+          <div class="analytics-grid">
+            <!-- Monthly Trend Bar Chart -->
+            <div class="glass-card full-height span-2">
+              <div class="card-header"><h3>Monthly Income vs Expenses</h3></div>
+              <div class="chart-container" id="trend-chart"></div>
+            </div>
+
+            <!-- Category Pie-style list -->
+            <div class="glass-card full-height">
+              <div class="card-header"><h3>Spending by Category</h3></div>
+              <div class="category-list" id="analytics-category-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SETTINGS PAGE ── -->
+        <div id="page-settings" class="page">
+          <header class="top-nav">
+            <h1 class="page-title">Settings</h1>
+          </header>
+
+          <!-- Profile Card -->
+          <div class="settings-grid">
+            <div class="glass-card settings-card">
+              <div class="card-header"><h3>👤  Your Profile</h3></div>
+              <div class="profile-info">
+                <div class="profile-avatar" id="settings-avatar">A</div>
+                <div>
+                  <h2 id="settings-name">Name</h2>
+                  <p id="settings-email" style="color:var(--text-secondary);margin-top:4px;"></p>
+                  <span class="badge role-badge" id="settings-role" style="margin-top:10px;display:inline-block;">ROLE</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Admin User Management -->
+            <div class="glass-card settings-card" id="admin-users-card">
+              <div class="card-header">
+                <h3>🛡️  User Management</h3>
+                <span style="font-size:12px;color:var(--text-muted)">Admin only</span>
+              </div>
+              <div class="table-container">
+                <table class="premium-table">
                   <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Description</th>
-                      <th>Category</th>
-                      <th>By</th>
-                      <th>Amount</th>
-                    </tr>
+                    <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr>
                   </thead>
-                  <tbody id="activity-table-body">
-                    <!-- dynamic rows map here -->
+                  <tbody id="users-table-body">
+                    <tr><td colspan="5" class="loading-cell">Loading users...</td></tr>
                   </tbody>
                 </table>
               </div>
             </div>
-
           </div>
         </div>
-      </div>
+
+      </div><!-- end main-content -->
     </section>
 
   </main>
