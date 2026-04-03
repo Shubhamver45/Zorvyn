@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Zorvyn Finance Dashboard</title>
-  <meta name="description" content="Zorvyn Finance — premium multi-role financial management dashboard." />
+  <meta name="description" content="Zorvyn Finance — smart money management for modern teams." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,19 +12,12 @@
 </head>
 <body>
 
-  <!-- Ambient Background -->
-  <div class="ambient-background">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-  </div>
-
   <!-- Toast Container -->
   <div id="toast-container"></div>
 
   <!-- Add/Edit Record Modal -->
   <div id="record-modal" class="modal-overlay hidden">
-    <div class="modal-box glass-card">
+    <div class="modal-box">
       <div class="modal-header">
         <h3 id="modal-title">Add Record</h3>
         <button class="icon-close-btn" id="modal-close">✕</button>
@@ -58,14 +51,14 @@
             <input type="date" id="rec-date" required />
           </div>
           <div class="input-group span-2">
-            <label>Description</label>
-            <input type="text" id="rec-desc" placeholder="Optional notes..." maxlength="500"/>
+            <label>Description (optional)</label>
+            <input type="text" id="rec-desc" placeholder="Add a note..." maxlength="500"/>
           </div>
         </div>
         <div id="modal-error" class="error-msg"></div>
         <div class="modal-actions">
           <button type="button" class="btn ghost-btn" id="modal-cancel">Cancel</button>
-          <button type="submit" class="btn primary-btn" id="modal-save">Save Record</button>
+          <button type="submit" class="btn primary-btn" id="modal-save" style="width:auto;padding:11px 28px;">Save Record</button>
         </div>
       </form>
     </div>
@@ -73,46 +66,99 @@
 
   <main id="app-container">
 
-    <!-- ── LOGIN VIEW ─────────────────────────────────────────── -->
+    <!-- ══════════════════════════════════════════
+         LOGIN VIEW — Split Layout
+    ═══════════════════════════════════════════ -->
     <section id="login-view" class="view active-view">
-      <div class="glass-card login-card">
-        <div class="brand">
-          <div class="logo">Z</div>
-          <h1>Zorvyn</h1>
+
+      <!-- Left: Hero Panel -->
+      <div class="login-hero">
+        <div class="hero-brand">
+          <div class="hero-logo">Z</div>
+          <h2>Zorvyn Finance</h2>
         </div>
-        <p class="subtitle">Sign in to your Finance Portal</p>
-        <form id="login-form">
-          <div class="input-group">
-            <label>Email address</label>
-            <input type="email" id="email" value="admin@zorvyn.dev" required autocomplete="email"/>
+
+        <div class="hero-center">
+          <h1>Smart money<br/>management for<br/><span>modern teams.</span></h1>
+          <p>Track income, manage expenses, and gain powerful insights — all in one beautifully designed platform.</p>
+
+          <!-- Decorative bar chart -->
+          <div class="hero-chart">
+            <div class="hero-bar" style="height:40px"></div>
+            <div class="hero-bar hi" style="height:75px"></div>
+            <div class="hero-bar" style="height:55px"></div>
+            <div class="hero-bar hi" style="height:90px"></div>
+            <div class="hero-bar" style="height:45px"></div>
+            <div class="hero-bar hi" style="height:110px"></div>
+            <div class="hero-bar" style="height:70px"></div>
+            <div class="hero-bar hi" style="height:95px"></div>
+            <div class="hero-bar" style="height:60px"></div>
+            <div class="hero-bar hi" style="height:130px"></div>
+            <div class="hero-bar" style="height:80px"></div>
+            <div class="hero-bar hi" style="height:105px"></div>
           </div>
-          <div class="input-group">
-            <label>Password</label>
-            <input type="password" id="password" value="Admin@1234" required autocomplete="current-password"/>
+
+          <!-- Stats row -->
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <div class="hero-stat-val">₹2.4M</div>
+              <div class="hero-stat-lbl green">↑ Total Income</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-val">₹84K</div>
+              <div class="hero-stat-lbl red">↓ Expenses</div>
+            </div>
           </div>
-          <div id="login-error" class="error-msg"></div>
-          <button type="submit" class="btn primary-btn" id="login-btn"><span>Sign In</span></button>
-        </form>
-        <div class="test-credentials">
-          <p>Demo accounts:</p>
-          <ul>
-            <li>admin@zorvyn.dev / Admin@1234</li>
-            <li>analyst@zorvyn.dev / Analyst@1234</li>
-            <li>viewer@zorvyn.dev / Viewer@1234</li>
-          </ul>
+        </div>
+
+        <div class="hero-footer">© 2026 Zorvyn Finance. All rights reserved.</div>
+      </div>
+
+      <!-- Right: Form Panel -->
+      <div class="login-form-panel">
+        <div class="login-card">
+          <div class="login-card-header">
+            <h2>Welcome back 👋</h2>
+            <p>Sign in to access your financial dashboard</p>
+          </div>
+
+          <form id="login-form">
+            <div class="input-group">
+              <label for="email">Email address</label>
+              <input type="email" id="email" value="admin@zorvyn.dev" required autocomplete="email" placeholder="you@example.com"/>
+            </div>
+            <div class="input-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" value="Admin@1234" required autocomplete="current-password" placeholder="Your password"/>
+            </div>
+            <div id="login-error" class="error-msg"></div>
+            <button type="submit" class="btn primary-btn" id="login-btn">Sign In →</button>
+          </form>
+
+          <div class="test-creds">
+            <p>Demo accounts</p>
+            <ul>
+              <li>admin@zorvyn.dev / Admin@1234</li>
+              <li>analyst@zorvyn.dev / Analyst@1234</li>
+              <li>viewer@zorvyn.dev / Viewer@1234</li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ── DASHBOARD VIEW ─────────────────────────────────────── -->
+    <!-- ══════════════════════════════════════════
+         DASHBOARD VIEW
+    ═══════════════════════════════════════════ -->
     <section id="dashboard-view" class="view">
 
       <!-- Sidebar -->
-      <nav class="sidebar glass-panel">
-        <div class="sidebar-header brand">
-          <div class="logo small">Z</div>
+      <nav class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">Z</div>
           <h2>Zorvyn</h2>
         </div>
+
         <div class="user-profile">
           <div class="avatar" id="user-avatar">A</div>
           <div class="user-info">
@@ -120,14 +166,24 @@
             <span class="badge role-badge" id="user-role">ROLE</span>
           </div>
         </div>
+
         <ul class="nav-links" id="nav-links">
-          <li class="active" data-page="overview"><a href="#">Overview</a></li>
-          <li data-page="transactions"><a href="#">Transactions</a></li>
-          <li data-page="analytics"><a href="#">Analytics</a></li>
-          <li data-page="settings" id="settings-nav-item"><a href="#">Settings</a></li>
+          <li class="active" data-page="overview">
+            <a href="#"><span class="nav-icon">📊</span> Overview</a>
+          </li>
+          <li data-page="transactions">
+            <a href="#"><span class="nav-icon">💳</span> Transactions</a>
+          </li>
+          <li data-page="analytics">
+            <a href="#"><span class="nav-icon">📈</span> Analytics</a>
+          </li>
+          <li data-page="settings">
+            <a href="#"><span class="nav-icon">⚙️</span> Settings</a>
+          </li>
         </ul>
+
         <div class="sidebar-footer">
-          <button id="logout-btn" class="btn ghost-btn">Logout</button>
+          <button id="logout-btn" class="btn ghost-btn">← Logout</button>
         </div>
       </nav>
 
@@ -137,57 +193,66 @@
         <!-- ── OVERVIEW PAGE ── -->
         <div id="page-overview" class="page active-page">
           <header class="top-nav">
-            <h1 class="page-title">Financial Overview</h1>
+            <div>
+              <h1 class="page-title">Financial Overview</h1>
+              <p style="color:var(--text-muted);font-size:13.5px;margin-top:3px;" id="overview-date"></p>
+            </div>
             <div class="period-selector">
-              <button class="pill-btn active" data-period="week">Week</button>
-              <button class="pill-btn" data-period="month">Month</button>
-              <button class="pill-btn" data-period="year">Year</button>
+              <button class="pill-btn active" data-period="week">This Week</button>
+              <button class="pill-btn" data-period="month">This Month</button>
+              <button class="pill-btn" data-period="year">This Year</button>
             </div>
           </header>
+
           <div class="summary-cards">
-            <div class="glass-card stat-card glow-blue">
-              <span class="stat-icon">📈</span>
+            <div class="stat-card">
+              <div class="stat-icon-wrap icon-green">💰</div>
               <div class="stat-info">
                 <h3>Total Income</h3>
-                <p class="stat-value text-accent-green" id="stat-income">₹0.00</p>
+                <p class="stat-value text-accent-green" id="stat-income">₹0</p>
               </div>
             </div>
-            <div class="glass-card stat-card glow-purple">
-              <span class="stat-icon">📉</span>
+            <div class="stat-card">
+              <div class="stat-icon-wrap icon-red">💸</div>
               <div class="stat-info">
                 <h3>Total Expenses</h3>
-                <p class="stat-value text-accent-red" id="stat-expense">₹0.00</p>
+                <p class="stat-value text-accent-red" id="stat-expense">₹0</p>
               </div>
             </div>
-            <div class="glass-card stat-card glow-cyan highlight">
-              <span class="stat-icon">💳</span>
+            <div class="stat-card">
+              <div class="stat-icon-wrap icon-blue">🏦</div>
               <div class="stat-info">
                 <h3>Net Balance</h3>
-                <p class="stat-value text-glow" id="stat-balance">₹0.00</p>
+                <p class="stat-value text-accent-blue" id="stat-balance">₹0</p>
               </div>
             </div>
-            <div class="glass-card stat-card glow-pink">
-              <span class="stat-icon">📋</span>
+            <div class="stat-card">
+              <div class="stat-icon-wrap icon-orange">📋</div>
               <div class="stat-info">
                 <h3>Transactions</h3>
-                <p class="stat-value" id="stat-count">0</p>
+                <p class="stat-value text-accent-orange" id="stat-count">0</p>
               </div>
             </div>
           </div>
+
           <div class="bottom-grid">
-            <div class="glass-card full-height">
+            <div class="full-height">
               <div class="card-header"><h3>Category Breakdown</h3></div>
               <div class="category-list" id="category-container"></div>
             </div>
-            <div class="glass-card full-height span-2">
+            <div class="full-height">
               <div class="card-header">
                 <h3>Recent Activity</h3>
-                <button class="btn icon-btn" id="refresh-btn">🔄</button>
+                <button class="btn icon-btn" id="refresh-btn" title="Refresh">🔄</button>
               </div>
               <div class="table-container">
                 <table class="premium-table">
-                  <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>By</th><th>Amount</th></tr></thead>
-                  <tbody id="activity-table-body"></tbody>
+                  <thead>
+                    <tr><th>Date</th><th>Description</th><th>Category</th><th>By</th><th>Amount</th></tr>
+                  </thead>
+                  <tbody id="activity-table-body">
+                    <tr><td colspan="5" class="loading-cell">Loading…</td></tr>
+                  </tbody>
                 </table>
               </div>
             </div>
@@ -197,13 +262,15 @@
         <!-- ── TRANSACTIONS PAGE ── -->
         <div id="page-transactions" class="page">
           <header class="top-nav">
-            <h1 class="page-title">Transactions</h1>
-            <button class="btn primary-btn" id="add-record-btn" style="width:auto;padding:10px 22px;">+ Add Record</button>
+            <div>
+              <h1 class="page-title">Transactions</h1>
+              <p style="color:var(--text-muted);font-size:13.5px;margin-top:3px;">Manage all financial records</p>
+            </div>
+            <button class="btn primary-btn" id="add-record-btn" style="width:auto;padding:11px 22px;">+ Add Record</button>
           </header>
 
-          <!-- Filters Bar -->
-          <div class="glass-card filters-bar">
-            <input type="text" class="filter-input" id="filter-search" placeholder="🔍  Search description..." />
+          <div class="filters-bar">
+            <input type="text" class="filter-input" id="filter-search" placeholder="🔍  Search description…" style="min-width:200px;"/>
             <select class="filter-input" id="filter-type">
               <option value="">All Types</option>
               <option value="INCOME">Income</option>
@@ -216,33 +283,28 @@
               <option>Groceries</option><option>Transport</option><option>Healthcare</option>
               <option>Education</option><option>Entertainment</option><option>Travel</option><option>Other</option>
             </select>
-            <input type="date" class="filter-input" id="filter-start" />
-            <input type="date" class="filter-input" id="filter-end" />
-            <button class="btn ghost-btn" id="filter-reset" style="padding:10px 18px;font-size:13px;">Reset</button>
+            <input type="date" class="filter-input" id="filter-start" style="min-width:130px;"/>
+            <input type="date" class="filter-input" id="filter-end"   style="min-width:130px;"/>
+            <button class="btn ghost-btn" id="filter-reset" style="padding:9px 18px;font-size:13px;flex-shrink:0;">✕ Reset</button>
           </div>
 
-          <div class="glass-card">
+          <div style="background:#fff;border-radius:var(--radius-lg);border:1.5px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;">
             <div class="table-container">
               <table class="premium-table">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Category</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Actions</th>
+                    <th>Date</th><th>Description</th><th>Category</th>
+                    <th>Type</th><th>Amount</th><th>Actions</th>
                   </tr>
                 </thead>
                 <tbody id="transactions-table-body">
-                  <tr><td colspan="6" class="loading-cell">Loading...</td></tr>
+                  <tr><td colspan="6" class="loading-cell">Loading…</td></tr>
                 </tbody>
               </table>
             </div>
-            <!-- Pagination -->
             <div class="pagination-bar" id="pagination-bar">
               <button class="btn ghost-btn pag-btn" id="pag-prev" disabled>← Prev</button>
-              <span id="pag-info" class="pag-info">Page 1</span>
+              <span id="pag-info" class="pag-info">Page 1 of 1</span>
               <button class="btn ghost-btn pag-btn" id="pag-next">Next →</button>
             </div>
           </div>
@@ -251,7 +313,10 @@
         <!-- ── ANALYTICS PAGE ── -->
         <div id="page-analytics" class="page">
           <header class="top-nav">
-            <h1 class="page-title">Analytics</h1>
+            <div>
+              <h1 class="page-title">Analytics</h1>
+              <p style="color:var(--text-muted);font-size:13.5px;margin-top:3px;">Trends, charts & spending breakdown</p>
+            </div>
             <div class="period-selector">
               <button class="pill-btn active" data-period="3">3 Months</button>
               <button class="pill-btn" data-period="6">6 Months</button>
@@ -259,36 +324,32 @@
             </div>
           </header>
 
-          <!-- Analytics Summary Cards -->
-          <div class="summary-cards" id="analytics-cards">
-            <div class="glass-card stat-card glow-blue">
-              <span class="stat-icon">📈</span>
+          <div class="summary-cards">
+            <div class="stat-card">
+              <div class="stat-icon-wrap icon-green">💰</div>
               <div class="stat-info"><h3>Total Income</h3><p class="stat-value text-accent-green" id="an-income">₹0</p></div>
             </div>
-            <div class="glass-card stat-card glow-purple">
-              <span class="stat-icon">📉</span>
+            <div class="stat-card">
+              <div class="stat-icon-wrap icon-red">💸</div>
               <div class="stat-info"><h3>Total Expenses</h3><p class="stat-value text-accent-red" id="an-expense">₹0</p></div>
             </div>
-            <div class="glass-card stat-card glow-cyan highlight">
-              <span class="stat-icon">💰</span>
-              <div class="stat-info"><h3>Net Balance</h3><p class="stat-value text-glow" id="an-balance">₹0</p></div>
+            <div class="stat-card">
+              <div class="stat-icon-wrap icon-blue">🏦</div>
+              <div class="stat-info"><h3>Net Balance</h3><p class="stat-value text-accent-blue" id="an-balance">₹0</p></div>
             </div>
-            <div class="glass-card stat-card glow-pink">
-              <span class="stat-icon">📊</span>
+            <div class="stat-card">
+              <div class="stat-icon-wrap icon-purple">📉</div>
               <div class="stat-info"><h3>Savings Rate</h3><p class="stat-value" id="an-rate">0%</p></div>
             </div>
           </div>
 
           <div class="analytics-grid">
-            <!-- Monthly Trend Bar Chart -->
-            <div class="glass-card full-height span-2">
+            <div style="background:#fff;border-radius:var(--radius-lg);border:1.5px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;">
               <div class="card-header"><h3>Monthly Income vs Expenses</h3></div>
               <div class="chart-container" id="trend-chart"></div>
             </div>
-
-            <!-- Category Pie-style list -->
-            <div class="glass-card full-height">
-              <div class="card-header"><h3>Spending by Category</h3></div>
+            <div style="background:#fff;border-radius:var(--radius-lg);border:1.5px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;display:flex;flex-direction:column;">
+              <div class="card-header"><h3>By Category</h3></div>
               <div class="category-list" id="analytics-category-list"></div>
             </div>
           </div>
@@ -297,28 +358,31 @@
         <!-- ── SETTINGS PAGE ── -->
         <div id="page-settings" class="page">
           <header class="top-nav">
-            <h1 class="page-title">Settings</h1>
+            <div>
+              <h1 class="page-title">Settings</h1>
+              <p style="color:var(--text-muted);font-size:13.5px;margin-top:3px;">Profile and user management</p>
+            </div>
           </header>
 
-          <!-- Profile Card -->
           <div class="settings-grid">
-            <div class="glass-card settings-card">
+            <!-- Profile -->
+            <div class="settings-card">
               <div class="card-header"><h3>👤  Your Profile</h3></div>
               <div class="profile-info">
                 <div class="profile-avatar" id="settings-avatar">A</div>
                 <div>
-                  <h2 id="settings-name">Name</h2>
-                  <p id="settings-email" style="color:var(--text-secondary);margin-top:4px;"></p>
-                  <span class="badge role-badge" id="settings-role" style="margin-top:10px;display:inline-block;">ROLE</span>
+                  <h2 id="settings-name">—</h2>
+                  <p style="color:var(--text-secondary);margin-top:5px;font-size:14px;" id="settings-email">—</p>
+                  <span class="badge role-badge" style="margin-top:10px;display:inline-block;" id="settings-role">—</span>
                 </div>
               </div>
             </div>
 
-            <!-- Admin User Management -->
-            <div class="glass-card settings-card" id="admin-users-card">
+            <!-- User Management (Admin only) -->
+            <div class="settings-card" id="admin-users-card">
               <div class="card-header">
                 <h3>🛡️  User Management</h3>
-                <span style="font-size:12px;color:var(--text-muted)">Admin only</span>
+                <span style="font-size:12px;color:var(--text-muted);background:var(--bg-base);padding:3px 10px;border-radius:20px;border:1px solid var(--border);">Admin only</span>
               </div>
               <div class="table-container">
                 <table class="premium-table">
@@ -326,7 +390,7 @@
                     <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr>
                   </thead>
                   <tbody id="users-table-body">
-                    <tr><td colspan="5" class="loading-cell">Loading users...</td></tr>
+                    <tr><td colspan="5" class="loading-cell">Loading users…</td></tr>
                   </tbody>
                 </table>
               </div>

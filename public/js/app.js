@@ -70,6 +70,10 @@ function revealDashboard() {
   el('user-role').textContent = u.role;
   el('user-avatar').textContent = u.name.charAt(0).toUpperCase();
 
+  // Set today's date subtitle
+  const dateEl = el('overview-date');
+  if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
   // Show/hide Settings for non-admins (settings still shown but users table hidden for non-admins)
   buildSidebar();
   showView('dashboard');
