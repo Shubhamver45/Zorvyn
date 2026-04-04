@@ -1,452 +1,301 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Zorvyn Finance — Dashboard</title>
-  <meta name="description" content="Zorvyn — Premium Finance Intelligence Platform"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css/style.css"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zorvyn · Neural Finance</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+<div id="C"></div><div id="CR"></div>
+<canvas id="bg"></canvas>
 
-<div id="toast-container"></div>
+<!-- ═══════════════ LOGIN PAGE ═══════════════ -->
+<div id="LP">
+  <div class="ll">
+    <div class="scan"></div>
 
-<!-- Record Modal -->
-<div id="record-modal" class="modal-overlay hidden">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h3 id="modal-title">New Transaction</h3>
-      <button class="modal-close" id="modal-close">✕</button>
+    <div class="lbrand">
+      <div class="lz">Z</div>
+      <div><div class="lbname">Zorvyn Finance</div><div class="lbtag">Neural Command Center</div></div>
     </div>
-    <form id="record-form">
-      <input type="hidden" id="rec-id"/>
-      <div class="form-grid">
-        <div class="field-group">
-          <label>Amount (₹)</label>
-          <input type="number" id="rec-amount" placeholder="0.00" required min="0.01" step="0.01"/>
+
+    <div class="lhero">
+      <div class="lbadge"><span class="lbadge-dot"></span>Real-Time Analytics</div>
+      <h1 class="lh1">Where money<br>meets <em>intelligence.</em></h1>
+      <p class="lp1">Track income, eliminate waste, and unlock insights your team never had before — all inside a terminal built for the future of finance.</p>
+
+      <div class="metrics-strip">
+        <div class="ms-item">
+          <div class="ms-val" style="color:var(--g)">₹2.4M</div>
+          <div class="ms-lbl">Total Income</div>
+          <div class="ms-chg"><span class="chg-up">↑ 14.7%</span><span style="color:var(--muted2)">YoY</span></div>
         </div>
-        <div class="field-group">
-          <label>Type</label>
-          <select id="rec-type">
-            <option value="INCOME">📈 Income</option>
-            <option value="EXPENSE">📉 Expense</option>
-          </select>
+        <div class="ms-item">
+          <div class="ms-val" style="color:var(--r)">₹84K</div>
+          <div class="ms-lbl">Total Expenses</div>
+          <div class="ms-chg"><span class="chg-dn">↓ 3.1%</span><span style="color:var(--muted2)">YoY</span></div>
         </div>
-        <div class="field-group">
-          <label>Category</label>
-          <select id="rec-category">
-            <option>Salary</option><option>Freelance</option><option>Bonus</option>
-            <option>Investment</option><option>Rent</option><option>Utilities</option>
-            <option>Groceries</option><option>Transport</option><option>Healthcare</option>
-            <option>Education</option><option>Entertainment</option><option>Travel</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label>Date</label>
-          <input type="date" id="rec-date" required/>
-        </div>
-        <div class="field-group span-full">
-          <label>Description</label>
-          <input type="text" id="rec-desc" placeholder="What was this for?" maxlength="500"/>
+        <div class="ms-item">
+          <div class="ms-val" style="color:var(--p)">94.8%</div>
+          <div class="ms-lbl">Save Rate</div>
+          <div class="ms-chg"><span class="chg-up">↑ 2.3%</span><span style="color:var(--muted2)">YoY</span></div>
         </div>
       </div>
-      <div id="modal-error" class="modal-error"></div>
-      <div class="modal-actions">
-        <button type="button" class="btn-ghost" id="modal-cancel">Cancel</button>
-        <button type="submit" class="btn-primary" id="modal-save">Save Transaction</button>
+
+      <div class="ls-chart">
+        <div class="lsc-top">
+          <div class="lsc-title">Portfolio Trend · FY 2026</div>
+          <div class="lsc-live">Live</div>
+        </div>
+        <svg id="lSpk" viewBox="0 0 500 70" preserveAspectRatio="none"></svg>
+        <div style="display:flex;justify-content:space-between;margin-top:8px">
+          <span style="font-size:8px;letter-spacing:1px;color:var(--muted)">APR '25</span>
+          <span style="font-size:8px;letter-spacing:1px;color:var(--muted)">OCT '25</span>
+          <span style="font-size:8px;letter-spacing:1px;color:var(--muted)">APR '26</span>
+        </div>
       </div>
-    </form>
+    </div>
+  </div>
+
+  <!-- RIGHT: FORM -->
+  <div class="lr">
+    <div class="lform">
+      <div class="lf-tag">Secure Access</div>
+      <h2 class="lf-h">Welcome<br><span>back.</span></h2>
+      <p class="lf-sub">Sign in to access your financial command center. Use the demo accounts below to explore.</p>
+
+      <!-- AUTH TABS -->
+      <div class="auth-tabs" style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg2);padding:4px;border-radius:12px;border:1px solid var(--border)">
+        <button class="auth-tab active" id="tab-login" style="flex:1;padding:10px;background:var(--g);color:#04050A;border:none;border-radius:8px;cursor:pointer;font-family:'JetBrains Mono';font-size:11px;font-weight:700">SIGN IN</button>
+        <button class="auth-tab" id="tab-register" style="flex:1;padding:10px;background:transparent;color:var(--muted2);border:none;border-radius:8px;cursor:pointer;font-family:'JetBrains Mono';font-size:11px">REGISTER</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="login-panel">
+        <div class="fld">
+          <label>Email Address</label>
+          <input type="email" id="eIn" value="admin@zorvyn.dev" placeholder="you@zorvyn.dev">
+        </div>
+        <div class="fld">
+          <label>Password</label>
+          <input type="password" id="pIn" value="Admin@1234" placeholder="••••••••••••">
+        </div>
+        <button class="btn-in" id="signinBtn" onclick="doLogin()">SIGN IN →</button>
+
+        <div class="demo-box">
+          <div class="demo-hd">Quick Demo Access</div>
+          <div class="demo-row" onclick="fill('admin@zorvyn.dev','Admin@1234')">
+            <div class="dr-email">admin@zorvyn.dev · Admin@1234</div>
+            <div class="dr-pill pa">Admin</div>
+          </div>
+          <div class="demo-row" onclick="fill('analyst@zorvyn.dev','Analyst@1234')">
+            <div class="dr-email">analyst@zorvyn.dev · Analyst@1234</div>
+            <div class="dr-pill pb">Analyst</div>
+          </div>
+          <div class="demo-row" onclick="fill('viewer@zorvyn.dev','Viewer@1234')">
+            <div class="dr-email">viewer@zorvyn.dev · Viewer@1234</div>
+            <div class="dr-pill pc">Viewer</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="register-panel" style="display:none">
+        <div class="fld">
+          <label>Full Name</label>
+          <input type="text" id="reg-name" placeholder="Alice Johnson">
+        </div>
+        <div class="fld">
+          <label>Email Address</label>
+          <input type="email" id="reg-email" placeholder="alice@example.com">
+        </div>
+        <div class="fld">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="Min 8 chars, 1 uppercase, 1 number">
+        </div>
+        <div class="fld">
+          <label>Confirm Password</label>
+          <input type="password" id="reg-confirm" placeholder="Repeat your password">
+        </div>
+        <div id="register-error" style="color:var(--r);font-size:10px;margin-bottom:10px"></div>
+        <button class="btn-in" id="registerBtn" onclick="doRegister()">CREATE ACCOUNT →</button>
+      </div>
+
+    </div>
   </div>
 </div>
 
-<main id="app">
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div id="DP">
+  <!-- SIDEBAR -->
+  <div class="sb">
+    <div class="sb-brand"><div class="sb-z">Z</div><div class="sb-name">Zorvyn</div></div>
+    <div class="sb-user">
+      <div class="sb-ava" id="sbAva">A</div>
+      <div class="sb-uname" id="sbName">Alice Admin</div>
+      <div class="sb-urole" id="sbRole">Admin</div>
+    </div>
+    <div class="sb-sec">Navigation</div>
+    <div class="nav on" onclick="goView('overview',this)"><span class="nav-ic">📊</span>Overview</div>
+    <div class="nav" onclick="goView('transactions',this)"><span class="nav-ic">💳</span>Transactions</div>
+    <div class="nav" onclick="goView('analytics',this)"><span class="nav-ic">📈</span>Analytics</div>
+    <div class="nav" onclick="goView('settings',this)"><span class="nav-ic">⚙️</span>Settings</div>
+    <div class="sb-spacer"></div>
+    <div class="sb-logout" onclick="doLogout()"><span>←</span> Logout</div>
+  </div>
 
-  <!-- ══════════ LOGIN ══════════ -->
-  <section id="login-view" class="view active">
-    <!-- Animated BG -->
-    <div class="login-bg">
-      <div class="grid-overlay"></div>
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
-      <!-- Floating financial data particles -->
-      <div class="float-el" style="top:12%;left:8%;animation-delay:0s">+₹85,000</div>
-      <div class="float-el" style="top:30%;left:14%;animation-delay:1.2s">NET +34%</div>
-      <div class="float-el" style="top:55%;left:6%;animation-delay:0.6s">₹2.4M</div>
-      <div class="float-el" style="top:72%;left:18%;animation-delay:2s">INCOME ↑</div>
-      <div class="float-el" style="top:20%;right:8%;animation-delay:0.4s">S&P ↑1.2%</div>
-      <div class="float-el" style="top:42%;right:12%;animation-delay:1.5s">ROI 28%</div>
-      <div class="float-el" style="top:65%;right:7%;animation-delay:0.9s">-₹12,300</div>
-      <div class="float-el" style="top:82%;right:20%;animation-delay:1.8s">₹1.8M saved</div>
+  <!-- MAIN -->
+  <div class="main">
+    <!-- TOP BAR -->
+    <div class="tbar">
+      <div class="tb-left">
+        <h2 id="pvTitle">FINANCIAL OVERVIEW</h2>
+        <p id="pvSub">Saturday, 4 April 2026</p>
+      </div>
+      <div class="timetabs">
+        <div class="tt on" onclick="setTT('week',this)">This Week</div>
+        <div class="tt" onclick="setTT('month',this)">This Month</div>
+        <div class="tt" onclick="setTT('year',this)">This Year</div>
+      </div>
     </div>
 
-    <!-- Center card -->
-    <div class="login-card">
-      <div class="login-card-glow"></div>
-
-      <div class="login-brand">
-        <div class="logo-mark">Z</div>
-        <div>
-          <h1 class="brand-name">Zorvyn</h1>
-          <p class="brand-tagline">Finance Intelligence</p>
+    <!-- OVERVIEW -->
+    <div id="vOverview">
+      <div class="karea">
+        <div class="kcard">
+          <div class="kc-row1"><div class="kc-lbl">Total Income</div><div class="kc-ico">💰</div></div>
+          <div class="kc-num" id="kTotalIncome" data-p="₹">₹0</div>
+          <svg class="kc-spark" id="ks1" viewBox="0 0 300 40" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="kcard">
+          <div class="kc-row1"><div class="kc-lbl">Total Expenses</div><div class="kc-ico">🧾</div></div>
+          <div class="kc-num" id="kTotalExpenses" data-p="₹">₹0</div>
+          <svg class="kc-spark" id="ks2" viewBox="0 0 300 40" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="kcard">
+          <div class="kc-row1"><div class="kc-lbl">Net Balance</div><div class="kc-ico">🏦</div></div>
+          <div class="kc-num" id="kNetBalance" data-p="₹">₹0</div>
+          <svg class="kc-spark" id="ks3" viewBox="0 0 300 40" preserveAspectRatio="none"></svg>
+        </div>
+        <div class="kcard">
+          <div class="kc-row1"><div class="kc-lbl">Transactions</div><div class="kc-ico">📋</div></div>
+          <div class="kc-num" id="kRecordCount" data-p="">0</div>
+          <svg class="kc-spark" id="ks4" viewBox="0 0 300 40" preserveAspectRatio="none"></svg>
         </div>
       </div>
 
-      <!-- Tab Switcher -->
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tab-login" type="button">Sign In</button>
-        <button class="auth-tab" id="tab-register" type="button">Create Account</button>
-      </div>
-
-      <!-- Login Form -->
-      <div id="login-panel">
-        <div class="login-headline">
-          <h2>Your wealth,<br/><span class="gradient-text">visualised.</span></h2>
-          <p>Sign in to access your financial command centre.</p>
-        </div>
-        <form id="login-form" class="login-form">
-          <div class="field-group">
-            <label>Email</label>
-            <input type="email" id="email" value="admin@zorvyn.dev" required placeholder="you@zorvyn.dev" autocomplete="email"/>
+      <div class="dbody">
+        <!-- LEFT -->
+        <div class="panel" style="animation-delay:.35s">
+          <div class="ptitle">Category Breakdown</div>
+          <div class="ring-area">
+            <canvas id="ringC" width="150" height="150"></canvas>
+            <div class="ring-mid"><div class="rm-val" id="catTotalExp">₹0</div><div class="rm-lbl">Expenses</div></div>
           </div>
-          <div class="field-group">
-            <label>Password</label>
-            <input type="password" id="password" value="Admin@1234" required placeholder="••••••••" autocomplete="current-password"/>
-          </div>
-          <p id="login-error" class="login-error"></p>
-          <button type="submit" class="btn-login" id="login-btn">
-            <span id="login-btn-text">Sign In</span>
-            <span class="btn-arrow">→</span>
-          </button>
-        </form>
-        <div class="login-creds">
-          <div class="cred-row"><span class="cred-role admin">ADMIN</span><span>admin@zorvyn.dev / Admin@1234</span></div>
-          <div class="cred-row"><span class="cred-role analyst">ANALYST</span><span>analyst@zorvyn.dev / Analyst@1234</span></div>
-          <div class="cred-row"><span class="cred-role viewer">VIEWER</span><span>viewer@zorvyn.dev / Viewer@1234</span></div>
-        </div>
-      </div>
-
-      <!-- Register Form -->
-      <div id="register-panel" class="hidden-panel">
-        <div class="login-headline">
-          <h2>Join <span class="gradient-text">Zorvyn.</span></h2>
-          <p>Create your account — new users start with Viewer access.</p>
-        </div>
-        <form id="register-form">
-          <div class="field-group">
-            <label>Full Name</label>
-            <input type="text" id="reg-name" required placeholder="Alice Johnson" autocomplete="name"/>
-          </div>
-          <div class="field-group">
-            <label>Email</label>
-            <input type="email" id="reg-email" required placeholder="alice@example.com" autocomplete="email"/>
-          </div>
-          <div class="field-group">
-            <label>Password <small style="color:var(--txt-3);font-weight:400">(min 8 chars, 1 uppercase, 1 number)</small></label>
-            <input type="password" id="reg-password" required placeholder="Create a strong password" autocomplete="new-password"/>
-          </div>
-          <div class="field-group">
-            <label>Confirm Password</label>
-            <input type="password" id="reg-confirm" required placeholder="Repeat your password" autocomplete="new-password"/>
-          </div>
-          <p id="register-error" class="login-error"></p>
-          <button type="submit" class="btn-login" id="register-btn">
-            <span id="register-btn-text">Create Account</span>
-            <span class="btn-arrow">→</span>
-          </button>
-        </form>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════════ DASHBOARD ══════════ -->
-  <section id="dashboard-view" class="view">
-    <div class="shell">
-
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="sb-top">
-          <div class="sb-brand">
-            <div class="logo-mark sm">Z</div>
-            <span class="sb-name">Zorvyn</span>
-          </div>
-
-          <div class="sb-user">
-            <div class="sb-avatar" id="user-avatar">A</div>
-            <div class="sb-user-info">
-              <span id="user-name" class="sb-user-name">User</span>
-              <span id="user-role" class="sb-role-badge">ROLE</span>
-            </div>
-          </div>
-
-          <nav class="sb-nav">
-            <a class="sb-link active" data-page="overview" href="#">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-              Overview
-            </a>
-            <a class="sb-link" data-page="transactions" href="#">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              Transactions
-            </a>
-            <a class="sb-link" data-page="analytics" href="#">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              Analytics
-            </a>
-            <a class="sb-link" data-page="settings" href="#">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              Settings
-            </a>
-          </nav>
-        </div>
-
-        <div class="sb-bottom">
-          <button id="logout-btn" class="sb-logout">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Sign Out
-          </button>
-        </div>
-      </aside>
-
-      <!-- Pages -->
-      <div class="content-area">
-
-        <!-- ─── OVERVIEW ─── -->
-        <div id="page-overview" class="page active">
-          <div class="page-header">
-            <div>
-              <h1 class="page-title">Good <span id="greeting-time">morning</span>, <span id="greeting-name">User</span> 👋</h1>
-              <p class="page-sub" id="overview-date"></p>
-            </div>
-            <div class="period-tabs">
-              <button class="period-tab active" data-period="week">Week</button>
-              <button class="period-tab" data-period="month">Month</button>
-              <button class="period-tab" data-period="year">Year</button>
-            </div>
-          </div>
-
-          <!-- KPI Cards -->
-          <div class="kpi-grid">
-            <div class="kpi-card income-card">
-              <div class="kpi-top">
-                <span class="kpi-label">Total Income</span>
-                <div class="kpi-icon-wrap income-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-                </div>
-              </div>
-              <div class="kpi-value" id="stat-income">₹0</div>
-              <div class="kpi-bar"><div class="kpi-bar-fill income-fill" id="bar-income" style="width:0%"></div></div>
-            </div>
-
-            <div class="kpi-card expense-card">
-              <div class="kpi-top">
-                <span class="kpi-label">Total Expenses</span>
-                <div class="kpi-icon-wrap expense-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
-                </div>
-              </div>
-              <div class="kpi-value expense-val" id="stat-expense">₹0</div>
-              <div class="kpi-bar"><div class="kpi-bar-fill expense-fill" id="bar-expense" style="width:0%"></div></div>
-            </div>
-
-            <div class="kpi-card balance-card">
-              <div class="kpi-top">
-                <span class="kpi-label">Net Balance</span>
-                <div class="kpi-icon-wrap balance-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                </div>
-              </div>
-              <div class="kpi-value balance-val" id="stat-balance">₹0</div>
-              <div class="balance-indicator" id="balance-indicator"></div>
-            </div>
-
-            <div class="kpi-card txn-card">
-              <div class="kpi-top">
-                <span class="kpi-label">Transactions</span>
-                <div class="kpi-icon-wrap txn-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                </div>
-              </div>
-              <div class="kpi-value txn-val" id="stat-count">0</div>
-              <p class="kpi-sub">recorded entries</p>
-            </div>
-          </div>
-
-          <!-- Charts Row -->
-          <div class="charts-row">
-            <!-- Category breakdown -->
-            <div class="glass-panel category-panel">
-              <div class="panel-header">
-                <h3>Category Breakdown</h3>
-              </div>
-              <div class="cat-list" id="category-container">
-                <p class="empty-msg">No data yet.</p>
-              </div>
-            </div>
-
-            <!-- Recent Activity -->
-            <div class="glass-panel activity-panel">
-              <div class="panel-header">
-                <h3>Recent Activity</h3>
-                <button class="icon-action" id="refresh-btn" title="Refresh">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                </button>
-              </div>
-              <div class="activity-list" id="activity-list">
-                <p class="empty-msg">Loading activity…</p>
-              </div>
-            </div>
+          <div class="clist" id="catList">
+            <!-- Categories injected here -->
           </div>
         </div>
 
-        <!-- ─── TRANSACTIONS ─── -->
-        <div id="page-transactions" class="page">
-          <div class="page-header">
-            <div>
-              <h1 class="page-title">Transactions</h1>
-              <p class="page-sub">Browse, filter and manage all financial records</p>
+        <!-- RIGHT -->
+        <div class="rstack">
+          <div class="panel" style="animation-delay:.42s">
+            <div class="ptitle">Revenue Flow · Last 7 Months</div>
+            <div class="chart-canvas-wrap"><canvas id="bigC"></canvas></div>
+            <div class="chart-months" id="bigCMonths">
+              <!-- Months injected here -->
             </div>
-            <button class="btn-primary" id="add-record-btn">+ New Transaction</button>
           </div>
-
-          <div class="filter-strip glass-panel">
-            <input type="text" class="filter-field" id="filter-search" placeholder="Search description…"/>
-            <select class="filter-field" id="filter-type">
-              <option value="">All Types</option>
-              <option value="INCOME">Income</option>
-              <option value="EXPENSE">Expense</option>
-            </select>
-            <select class="filter-field" id="filter-category">
-              <option value="">All Categories</option>
-              <option>Salary</option><option>Freelance</option><option>Bonus</option>
-              <option>Investment</option><option>Rent</option><option>Utilities</option>
-              <option>Groceries</option><option>Transport</option><option>Healthcare</option>
-              <option>Education</option><option>Entertainment</option><option>Travel</option><option>Other</option>
-            </select>
-            <input type="date" class="filter-field" id="filter-start"/>
-            <input type="date" class="filter-field" id="filter-end"/>
-            <button class="btn-ghost" id="filter-reset">Reset</button>
-          </div>
-
-          <div class="glass-panel table-panel">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Date</th><th>Description</th><th>Category</th>
-                  <th>Type</th><th>Amount</th><th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="transactions-table-body">
-                <tr><td colspan="6" class="tbl-empty">Loading…</td></tr>
-              </tbody>
+          <div class="panel" style="animation-delay:.49s">
+            <div class="txhdr">
+              <div class="ptitle" style="margin:0">Recent Activity</div>
+              <div class="tx-filters">
+                <button class="txf on" onclick="doFilterRecent('all',this)">All</button>
+                <button class="txf" onclick="doFilterRecent('INCOME',this)">Income</button>
+                <button class="txf" onclick="doFilterRecent('EXPENSE',this)">Expense</button>
+              </div>
+            </div>
+            <table class="txtbl">
+              <thead><tr><th>Date</th><th>Description</th><th>Category</th><th style="text-align:right">Amount</th></tr></thead>
+              <tbody id="tb1"></tbody>
             </table>
-            <div class="pag-bar">
-              <button class="btn-ghost pag-btn" id="pag-prev" disabled>← Prev</button>
-              <span class="pag-info" id="pag-info">Page 1 of 1</span>
-              <button class="btn-ghost pag-btn" id="pag-next">Next →</button>
-            </div>
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- ─── ANALYTICS ─── -->
-        <div id="page-analytics" class="page">
-          <div class="page-header">
-            <div>
-              <h1 class="page-title">Analytics</h1>
-              <p class="page-sub">Trends, patterns and spending insights</p>
-            </div>
-            <div class="period-tabs">
-              <button class="period-tab active" data-period="3">3M</button>
-              <button class="period-tab" data-period="6">6M</button>
-              <button class="period-tab" data-period="12">1Y</button>
-            </div>
-          </div>
-
-          <div class="kpi-grid">
-            <div class="kpi-card income-card">
-              <div class="kpi-top"><span class="kpi-label">Total Income</span></div>
-              <div class="kpi-value" id="an-income">₹0</div>
-            </div>
-            <div class="kpi-card expense-card">
-              <div class="kpi-top"><span class="kpi-label">Total Expenses</span></div>
-              <div class="kpi-value expense-val" id="an-expense">₹0</div>
-            </div>
-            <div class="kpi-card balance-card">
-              <div class="kpi-top"><span class="kpi-label">Net Balance</span></div>
-              <div class="kpi-value balance-val" id="an-balance">₹0</div>
-            </div>
-            <div class="kpi-card txn-card">
-              <div class="kpi-top"><span class="kpi-label">Savings Rate</span></div>
-              <div class="kpi-value txn-val" id="an-rate">0%</div>
-            </div>
-          </div>
-
-          <div class="analytics-row">
-            <div class="glass-panel chart-panel">
-              <div class="panel-header">
-                <h3>Income vs Expenses</h3>
-                <div class="chart-legend">
-                  <span class="legend-dot income-dot"></span><span class="legend-lbl">Income</span>
-                  <span class="legend-dot expense-dot"></span><span class="legend-lbl">Expense</span>
-                </div>
-              </div>
-              <div class="bar-chart-area" id="bar-chart"></div>
-            </div>
-            <div class="glass-panel cat-panel">
-              <div class="panel-header"><h3>Spending by Category</h3></div>
-              <div class="cat-list" id="analytics-category-list"></div>
-            </div>
+    <!-- TRANSACTIONS -->
+    <div id="vTransactions" style="display:none">
+      <div style="padding:24px 36px 80px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <div style="font-family:'Bebas Neue';font-size:14px;letter-spacing:2px;color:var(--muted2)">ALL RECORDS</div>
+          <div class="tx-filters" style="display:flex;gap:5px">
+            <button class="txf on" onclick="doFilterTx('all',this)">All</button>
+            <button class="txf" onclick="doFilterTx('INCOME',this)">Income</button>
+            <button class="txf" onclick="doFilterTx('EXPENSE',this)">Expense</button>
           </div>
         </div>
+        <div class="panel" style="padding:0;overflow:hidden">
+          <table class="txtbl">
+            <thead><tr><th style="padding:14px 16px">Date</th><th>Description</th><th>Category</th><th style="text-align:right;padding-right:16px">Amount</th></tr></thead>
+            <tbody id="tb2"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-        <!-- ─── SETTINGS ─── -->
-        <div id="page-settings" class="page">
-          <div class="page-header">
-            <div>
-              <h1 class="page-title">Settings</h1>
-              <p class="page-sub">Profile and user administration</p>
-            </div>
-          </div>
-
-          <div class="settings-stack">
-            <div class="glass-panel profile-panel">
-              <div class="panel-header"><h3>Your Profile</h3></div>
-              <div class="profile-row">
-                <div class="profile-avatar" id="settings-avatar">A</div>
-                <div class="profile-details">
-                  <h2 id="settings-name">—</h2>
-                  <p id="settings-email">—</p>
-                  <span class="role-pill" id="settings-role">—</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="glass-panel" id="admin-users-card">
-              <div class="panel-header">
-                <h3>User Management</h3>
-                <span class="admin-badge">Admin Only</span>
-              </div>
-              <table class="data-table">
-                <thead>
-                  <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Action</th></tr>
-                </thead>
-                <tbody id="users-table-body">
-                  <tr><td colspan="5" class="tbl-empty">Loading…</td></tr>
-                </tbody>
-              </table>
-            </div>
+    <!-- ANALYTICS -->
+    <div id="vAnalytics" style="display:none">
+      <div class="agrid">
+        <div class="panel">
+          <div class="ptitle">Balance Trend · 7 Months</div>
+          <div style="height:180px;position:relative"><canvas id="lchart"></canvas></div>
+          <div style="display:flex;justify-content:space-between;margin-top:10px" id="lchartMonths">
+            <!-- Analytics months here -->
           </div>
         </div>
+        <div class="panel">
+          <div class="ptitle">Income vs Expenses</div>
+          <div style="height:180px;position:relative"><canvas id="bchart2"></canvas></div>
+          <div style="display:flex;gap:16px;margin-top:12px;font-size:10px"><span style="color:var(--g)">■ Income</span><span style="color:var(--r)">■ Expenses</span></div>
+        </div>
+        <div class="panel afull">
+          <div class="ptitle">Expense Distribution</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px" id="expDist">
+            <!-- Expense Distribution via API -->
+          </div>
+        </div>
+      </div>
+    </div>
 
-      </div><!-- end content-area -->
-    </div><!-- end shell -->
-  </section>
+    <!-- SETTINGS -->
+    <div id="vSettings" style="display:none">
+      <div class="sgrid" style="max-width:680px">
+        <div style="font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted2);padding:0 2px">Preferences</div>
+        <div class="srow"><div><div class="sname">Email Notifications</div><div class="sdesc">Daily summaries and transaction alerts</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="srow"><div><div class="sname">Dark Mode</div><div class="sdesc">Neural dark theme — currently active</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="srow"><div><div class="sname">Two-Factor Authentication</div><div class="sdesc">Add an extra layer of security to your account</div></div><div class="tog" onclick="this.classList.toggle('on')"></div></div>
+        <div class="srow"><div><div class="sname">Real-Time Market Ticker</div><div class="sdesc">Show live market data in the bottom bar</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+        <div style="font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted2);padding:12px 2px 0">Data & Export</div>
+        <div class="srow"><div><div class="sname">Export Transactions</div><div class="sdesc">Download all records as CSV file</div></div><button onclick="showToast('📥','Export started','Your CSV will be ready shortly')" style="padding:8px 16px;background:rgba(0,255,135,.08);border:1px solid rgba(0,255,135,.2);color:var(--g);border-radius:7px;cursor:pointer;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.5px">Export CSV</button></div>
+        <div class="srow"><div><div class="sname">Currency</div><div class="sdesc">Indian Rupee — ₹ INR</div></div><span style="font-size:12px;color:var(--muted2)">₹ INR</span></div>
+      </div>
+    </div>
 
-</main>
+    <!-- TICKER -->
+    <div class="ticker"><div class="ttrack" id="ttrack"></div></div>
+  </div>
+</div>
 
-<script src="./js/app.js"></script>
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="tico" id="tIco"></div>
+  <div><div class="ttitle" id="tTitle"></div><div class="tbody2" id="tBody"></div></div>
+  <div class="tbar"></div>
+</div>
+
+<script src="/js/app.js"></script>
 </body>
 </html>

@@ -1,536 +1,588 @@
-'use strict';
-
-const API = '/api';
-
-// ── State ─────────────────────────────────────────────────────────────────────
-let token       = localStorage.getItem('zorvyn_token') || null;
+/* ─── GLOBALS ─── */
+let token = localStorage.getItem('zorvyn_token') || null;
 let currentUser = JSON.parse(localStorage.getItem('zorvyn_user') || 'null');
-let overviewPeriod   = 'week';
-let analyticsPeriod  = 3;
-let txPage = 1;
+let currentPeriod = 'month';
 
-// ── Boot ──────────────────────────────────────────────────────────────────────
+/* ─── API HELPER ─── */
+const API_URL = '/api';
+async function apiFetch(path, method = 'GET', body = null) {
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (body) headers['Content-Type'] = 'application/json';
+
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+
+  const res = await fetch(`${API_URL}${path}`, opts);
+  if (res.status === 401 && token) {
+    doLogout();
+    return null;
+  }
+  const data = await res.json();
+  return data;
+}
+
+/* ─── CURSOR ─── */
+const C=document.getElementById('C'),CR=document.getElementById('CR');
+let mx=0,my=0,rrx=0,rry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;C.style.left=mx+'px';C.style.top=my+'px'});
+(function raf(){rrx+=(mx-rrx)*.11;rry+=(my-rry)*.11;if(CR) {CR.style.left=rrx+'px';CR.style.top=rry+'px';}requestAnimationFrame(raf)})();
+document.addEventListener('mousedown',()=>{C.style.transform='translate(-50%,-50%) scale(1.8)';if(CR)CR.style.transform='translate(-50%,-50%) scale(.8)'});
+document.addEventListener('mouseup',()=>{C.style.transform='translate(-50%,-50%) scale(1)';if(CR)CR.style.transform='translate(-50%,-50%) scale(1)'});
+
+/* ─── CANVAS PARTICLES ─── */
+(function(){
+  const cv=document.getElementById('bg');
+  if(!cv)return;
+  const cx=cv.getContext('2d');
+  let W,H,nodes=[];
+  const resize=()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;spawnNodes()};
+  const spawnNodes=()=>{
+    nodes=[];
+    const n=Math.floor((W*H)/12000);
+    for(let i=0;i<n;i++)nodes.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,r:Math.random()*1.2+.3,a:Math.random()*.4+.1});
+  };
+  let t=0;
+  const draw=()=>{
+    cx.clearRect(0,0,W,H);t+=.003;
+    nodes.forEach(n=>{n.x+=n.vx;n.y+=n.vy;if(n.x<0||n.x>W)n.vx*=-1;if(n.y<0||n.y>H)n.vy*=-1});
+    for(let i=0;i<nodes.length;i++){
+      for(let j=i+1;j<nodes.length;j++){
+        const dx=nodes[i].x-nodes[j].x,dy=nodes[i].y-nodes[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<110){cx.beginPath();cx.moveTo(nodes[i].x,nodes[i].y);cx.lineTo(nodes[j].x,nodes[j].y);cx.strokeStyle=`rgba(0,255,135,${.035*(1-d/110)})`;cx.lineWidth=.6;cx.stroke()}
+      }
+      cx.beginPath();cx.arc(nodes[i].x,nodes[i].y,nodes[i].r,0,Math.PI*2);
+      cx.fillStyle=`rgba(0,255,135,${nodes[i].a*(0.5+0.5*Math.sin(t+nodes[i].x*.01))})`;cx.fill();
+    }
+    requestAnimationFrame(draw);
+  };
+  resize();draw();window.addEventListener('resize',resize);
+})();
+
+/* ─── SPARKLINE DRAW ─── */
+function drawSpk(svgId,data,col,viewW,viewH){
+  const s=document.getElementById(svgId);if(!s)return;
+  const mn=Math.min(...data),mx2=Math.max(...data),rng=mx2-mn||1;
+  const pad=3;
+  const pts=data.map((v,i)=>({
+    x:pad+(i/(data.length-1))*(viewW-pad*2),
+    y:viewH-pad-((v-mn)/rng)*(viewH-pad*2)
+  }));
+  const line=pts.map((p,i)=>(i===0?`M${p.x.toFixed(1)},${p.y.toFixed(1)}`:`L${p.x.toFixed(1)},${p.y.toFixed(1)}`)).join(' ');
+  const area=line+` L${viewW-pad},${viewH} L${pad},${viewH} Z`;
+  const gid='g'+svgId;
+  s.innerHTML=`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${col}" stop-opacity="0.35"/><stop offset="100%" stop-color="${col}" stop-opacity="0"/></linearGradient></defs>
+  <path d="${area}" fill="url(#${gid})"/>
+  <path d="${line}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="${pts[pts.length-1].x.toFixed(1)}" cy="${pts[pts.length-1].y.toFixed(1)}" r="3" fill="${col}"/>
+  <circle cx="${pts[pts.length-1].x.toFixed(1)}" cy="${pts[pts.length-1].y.toFixed(1)}" r="5.5" fill="${col}" opacity="0.25"/>`;
+}
+
+/* ─── ON LOAD ─── */
 document.addEventListener('DOMContentLoaded', () => {
-  if (token && currentUser) { revealDashboard(); }
-  else { showView('login'); }
-  bindLogin();
-  bindAuthTabs();
-  bindRegister();
+  drawSpk('lSpk',[12,18,22,19,28,25,35,32,42,38,50,48,60,58,70,68,80,78,85,82,90,88,95],'#00FF87',500,70);
+
+  // Tabs
+  document.getElementById('tab-login')?.addEventListener('click', function() {
+    this.classList.add('active'); this.style.background = 'var(--g)'; this.style.color = '#04050A';
+    const tre = document.getElementById('tab-register');
+    tre.classList.remove('active'); tre.style.background = 'transparent'; tre.style.color = 'var(--muted2)';
+    document.getElementById('login-panel').style.display = 'block';
+    document.getElementById('register-panel').style.display = 'none';
+  });
+  document.getElementById('tab-register')?.addEventListener('click', function() {
+    this.classList.add('active'); this.style.background = 'var(--g)'; this.style.color = '#04050A';
+    const tlo = document.getElementById('tab-login');
+    tlo.classList.remove('active'); tlo.style.background = 'transparent'; tlo.style.color = 'var(--muted2)';
+    document.getElementById('register-panel').style.display = 'block';
+    document.getElementById('login-panel').style.display = 'none';
+  });
+
+  if (token && currentUser) {
+    document.getElementById('LP').style.display = 'none';
+    document.getElementById('DP').style.display = 'block';
+    setupUser();
+    initDash();
+  }
 });
 
-// ── View Control ──────────────────────────────────────────────────────────────
-function showView(name) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(`${name}-view`).classList.add('active');
-}
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(`page-${name}`).classList.add('active');
-  document.querySelectorAll('.sb-link').forEach(a => {
-    a.classList.toggle('active', a.dataset.page === name);
-  });
-}
+/* ─── AUTH ─── */
+const fill=(e,p)=>{document.getElementById('eIn').value=e;document.getElementById('pIn').value=p};
 
-// ── Auth Tab Switching ────────────────────────────────────────────────────────
-function bindAuthTabs() {
-  const tabLogin    = el('tab-login');
-  const tabRegister = el('tab-register');
-  const loginPanel  = el('login-panel');
-  const regPanel    = el('register-panel');
-
-  tabLogin.addEventListener('click', () => {
-    tabLogin.classList.add('active');
-    tabRegister.classList.remove('active');
-    loginPanel.classList.remove('hidden-panel');
-    regPanel.classList.remove('visible');
-    regPanel.classList.add('hidden-panel');
-  });
-
-  tabRegister.addEventListener('click', () => {
-    tabRegister.classList.add('active');
-    tabLogin.classList.remove('active');
-    regPanel.classList.remove('hidden-panel');
-    regPanel.classList.add('visible');
-    loginPanel.classList.add('hidden-panel');
-  });
-}
-
-// ── Register ──────────────────────────────────────────────────────────────────
-function bindRegister() {
-  document.getElementById('register-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const errEl = el('register-error');
-    const btn   = el('register-btn-text');
-    errEl.textContent = '';
-
-    const name     = el('reg-name').value.trim();
-    const email    = el('reg-email').value.trim();
-    const password = el('reg-password').value;
-    const confirm  = el('reg-confirm').value;
-
-    // Client-side validation — mirror backend Zod rules exactly
-    if (!name || name.length < 2) {
-      errEl.textContent = 'Name must be at least 2 characters.';
-      return;
-    }
-    if (password !== confirm) {
-      errEl.textContent = 'Passwords do not match.';
-      return;
-    }
-    if (password.length < 8) {
-      errEl.textContent = 'Password must be at least 8 characters.';
-      return;
-    }
-    if (!/[A-Z]/.test(password)) {
-      errEl.textContent = 'Password must contain at least one uppercase letter (e.g. A-Z).';
-      return;
-    }
-    if (!/[0-9]/.test(password)) {
-      errEl.textContent = 'Password must contain at least one number (e.g. 1-9).';
-      return;
-    }
-
-    btn.textContent = 'Creating account…';
-    el('register-btn').disabled = true;
-
-    const data = await post('/auth/register', { name, email, password });
-
-    btn.textContent = 'Create Account';
-    el('register-btn').disabled = false;
-
-    if (data?.success) {
-      // Auto-login with new credentials
-      const loginData = await post('/auth/login', { email, password });
-      if (loginData?.success) {
-        token = loginData.data.accessToken;
-        currentUser = loginData.data.user;
-        localStorage.setItem('zorvyn_token', token);
-        localStorage.setItem('zorvyn_user', JSON.stringify(currentUser));
-        revealDashboard();
-      } else {
-        el('tab-login').click();
-        toast('Account created! Please sign in.', 'success');
-      }
-    } else {
-      // Extract the most helpful error message possible
-      let msg = 'Registration failed.';
-      if (data?.errors?.length) {
-        // Zod field errors — join all messages
-        msg = data.errors.map(e => e.message).join(' · ');
-      } else if (data?.message) {
-        // Duplicate email or other server-level error
-        msg = data.message;
-      }
-      errEl.textContent = msg;
-    }
-  });
-}
-
-// ── Auth (Login) ──────────────────────────────────────────────────────────────
-function bindLogin() {
-  document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const errEl = document.getElementById('login-error');
-    const btn   = document.getElementById('login-btn-text');
-    errEl.textContent = '';
-    btn.textContent = 'Signing in…';
-
-    const data = await post('/auth/login', {
-      email:    document.getElementById('email').value,
-      password: document.getElementById('password').value,
-    });
-
-    btn.textContent = 'Sign In';
-    if (data?.success) {
-      token = data.data.accessToken;
-      currentUser = data.data.user;
-      localStorage.setItem('zorvyn_token', token);
-      localStorage.setItem('zorvyn_user', JSON.stringify(currentUser));
-      revealDashboard();
-    } else {
-      errEl.textContent = data?.message || 'Invalid credentials.';
-    }
-  });
-}
-
-function revealDashboard() {
-  const u = currentUser;
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
-
-  el('greeting-time').textContent = greeting;
-  el('greeting-name').textContent = u.name.split(' ')[0];
-  el('user-name').textContent     = u.name;
-  el('user-role').textContent     = u.role;
-  el('user-avatar').textContent   = u.name.charAt(0).toUpperCase();
-  el('overview-date').textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-
-  bindNav();
-  bindTransactions();
-  bindPeriodTabs('#page-overview .period-tab', v => { overviewPeriod = v; loadOverview(); });
-  bindPeriodTabs('#page-analytics .period-tab', v => { analyticsPeriod = parseInt(v); loadAnalytics(); });
-
-  el('refresh-btn').addEventListener('click', loadOverview);
-  el('logout-btn').addEventListener('click', logout);
-
-  const canWrite = ['ANALYST','ADMIN'].includes(u.role);
-  el('add-record-btn').style.display = canWrite ? '' : 'none';
-
-  showView('dashboard');
-  navigate('overview');
-}
-
-function logout() {
-  token = null; currentUser = null;
-  localStorage.removeItem('zorvyn_token');
-  localStorage.removeItem('zorvyn_user');
-  showView('login');
-}
-
-function bindNav() {
-  document.querySelectorAll('.sb-link').forEach(a => {
-    a.addEventListener('click', (e) => { e.preventDefault(); navigate(a.dataset.page); });
-  });
-}
-
-function navigate(page) {
-  showPage(page);
-  if (page === 'overview')     loadOverview();
-  if (page === 'transactions') loadTransactions();
-  if (page === 'analytics')    loadAnalytics();
-  if (page === 'settings')     loadSettings();
-}
-
-function bindPeriodTabs(selector, cb) {
-  document.querySelectorAll(selector).forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      document.querySelectorAll(selector).forEach(b => b.classList.remove('active'));
-      e.target.classList.add('active');
-      cb(e.target.dataset.period);
-    });
-  });
-}
-
-// ── API Helpers ───────────────────────────────────────────────────────────────
-async function apiFetch(ep, opts = {}) {
+async function doLogin(){
   try {
-    const res = await fetch(API + ep, {
-      ...opts,
-      headers: { 'Content-Type':'application/json', ...(token ? { Authorization:`Bearer ${token}` } : {}), ...opts.headers },
-    });
-    if (res.status === 401) { logout(); return null; }
-    if (res.status === 204) return { success: true };
-    return res.json();
-  } catch { return null; }
-}
-const get   = ep => apiFetch(ep);
-const post  = (ep, b) => apiFetch(ep, { method:'POST',  body: JSON.stringify(b) });
-const patch = (ep, b) => apiFetch(ep, { method:'PATCH', body: JSON.stringify(b) });
-const del   = ep => apiFetch(ep, { method:'DELETE' });
+    const e=document.getElementById('eIn').value.trim(),p=document.getElementById('pIn').value;
+    const btn=document.getElementById('signinBtn');
+    btn.textContent = 'CONNECTING...';
 
-// ── Overview ──────────────────────────────────────────────────────────────────
-async function loadOverview() {
-  const [sum, cats, recent] = await Promise.all([
-    get(`/dashboard/summary?period=${overviewPeriod}`),
-    get(`/dashboard/categories?period=${overviewPeriod}`),
-    get(`/dashboard/recent?limit=8`),
-  ]);
-  if (sum?.success)    renderKPIs(sum.data);
-  if (cats?.success)   renderCategoryList(cats.data, 'category-container');
-  if (recent?.success) renderActivityList(recent.data);
-}
+    const res = await apiFetch('/auth/login', 'POST', { email: e, password: p });
+    if(!res || !res.success){
+      btn.classList.add('err');btn.textContent=res?.message||'INVALID — TRY AGAIN';
+      setTimeout(()=>{btn.classList.remove('err');btn.textContent='SIGN IN →'},1500);return;
+    }
 
-function renderKPIs(d) {
-  animateNumber('stat-income',  d.totalIncome);
-  animateNumber('stat-expense', d.totalExpenses);
-  animateNumber('stat-balance', d.netBalance);
-  el('stat-count').textContent = d.recordCount;
+    token = res.data.accessToken;
+    currentUser = res.data.user;
+    localStorage.setItem('zorvyn_token', token);
+    localStorage.setItem('zorvyn_user', JSON.stringify(currentUser));
 
-  const max = Math.max(d.totalIncome, d.totalExpenses, 1);
-  el('bar-income').style.width  = `${Math.min((d.totalIncome  / max) * 100, 100)}%`;
-  el('bar-expense').style.width = `${Math.min((d.totalExpenses/ max) * 100, 100)}%`;
+    setupUser();
 
-  const balEl = el('balance-indicator');
-  if (d.netBalance >= 0) {
-    balEl.textContent = `▲ Positive — ${fmt(d.netBalance)} surplus`;
-    balEl.style.color = 'var(--income)';
-  } else {
-    balEl.textContent = `▼ Deficit — ${fmt(Math.abs(d.netBalance))}`;
-    balEl.style.color = 'var(--expense)';
+    const lp=document.getElementById('LP');
+    lp.style.transition='opacity .55s ease,transform .55s ease';
+    lp.style.opacity='0';lp.style.transform='scale(.97)';
+    setTimeout(()=>{
+      lp.style.display='none';
+      document.getElementById('DP').style.display='block';
+      initDash();
+      showToast('✅','Welcome back, '+currentUser.name.split(' ')[0]+'!','Your neural command center is live');
+    },560);
+  } catch (err) {
+    alert("CRITICAL ERROR: " + err.message + "\nPlease take a screenshot of this error.");
+    console.error(err);
   }
 }
 
-// ── Category List ─────────────────────────────────────────────────────────────
-const CAT_COLORS = ['#6366f1','#10b981','#f59e0b','#8b5cf6','#06b6d4','#ec4899','#14b8a6','#f97316','#84cc16'];
-function renderCategoryList(cats, containerId) {
-  const container = el(containerId);
-  const visible = cats?.filter(c => c.income > 0 || c.expense > 0) || [];
-  if (!visible.length) { container.innerHTML = '<p class="empty-msg">No data for this period.</p>'; return; }
-  const maxVal = Math.max(...visible.map(c => Math.max(c.income, c.expense)), 1);
+async function doRegister() {
+  const btn = document.getElementById('registerBtn');
+  const errEl = document.getElementById('register-error');
+  errEl.textContent = '';
+  
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const confirm = document.getElementById('reg-confirm').value;
 
-  container.innerHTML = visible.map((c, i) => {
-    const isInc  = c.net >= 0;
-    const color  = CAT_COLORS[i % CAT_COLORS.length];
-    const pct    = Math.max((Math.max(c.income, c.expense) / maxVal) * 100, 5);
-    return `<div class="cat-item">
-      <div class="cat-dot" style="background:${color}"></div>
-      <div class="cat-meta">
-        <span class="cat-name">${c.category}</span>
-        <div class="cat-track"><div class="cat-fill" style="width:${pct}%;background:${color}"></div></div>
-      </div>
-      <span class="cat-amount ${isInc ? 'tbl-inc':'tbl-exp'}">${isInc?'+':'-'}${fmt(Math.abs(c.net))}</span>
-    </div>`;
-  }).join('');
+  if (password !== confirm) { errEl.textContent = 'Passwords do not match.'; return; }
+  
+  btn.textContent = 'CREATING...';
+  const res = await apiFetch('/auth/register', 'POST', { name, email, password });
+  
+  if (!res || !res.success) {
+    btn.classList.add('err');
+    let msg = 'Registration failed.';
+    if (res?.errors?.length) msg = res.errors.map(e => e.message).join(' · ');
+    else if (res?.message) msg = res.message;
+    errEl.textContent = msg;
+    btn.textContent = 'CREATE ACCOUNT →';
+    return;
+  }
+
+  // Auto login
+  const loginData = await apiFetch('/auth/login', 'POST', { email, password });
+  if (loginData?.success) {
+    token = loginData.data.accessToken;
+    currentUser = loginData.data.user;
+    localStorage.setItem('zorvyn_token', token);
+    localStorage.setItem('zorvyn_user', JSON.stringify(currentUser));
+    setupUser();
+    const lp=document.getElementById('LP');
+    lp.style.transition='opacity .55s ease,transform .55s ease';
+    lp.style.opacity='0';lp.style.transform='scale(.97)';
+    setTimeout(()=>{
+      lp.style.display='none';
+      document.getElementById('DP').style.display='block';
+      initDash();
+      showToast('✅','Account created!','Welcome to Zorvyn.');
+    },560);
+  } else {
+    document.getElementById('tab-login').click();
+    showToast('✅','Account created!','Please sign in.');
+    btn.textContent = 'CREATE ACCOUNT →';
+  }
 }
 
-// ── Activity List ─────────────────────────────────────────────────────────────
-function renderActivityList(records) {
-  const container = el('activity-list');
-  if (!records?.length) { container.innerHTML = '<p class="empty-msg">No recent transactions.</p>'; return; }
-  container.innerHTML = records.map(r => {
-    const isInc = r.type === 'INCOME';
-    const emoji = isInc ? '📈' : '📉';
-    return `<div class="activity-row">
-      <div class="act-icon ${isInc ? 'act-icon-income':'act-icon-expense'}">${emoji}</div>
-      <div class="act-body">
-        <div class="act-desc">${r.description || r.category}</div>
-        <div class="act-meta">${r.category} · ${fmtDate(r.date)}</div>
-      </div>
-      <div class="act-amt ${isInc?'inc':'exp'}">${isInc?'+':'-'}${fmt(r.amount)}</div>
-    </div>`;
-  }).join('');
+function doLogout(){
+  apiFetch('/auth/logout', 'POST', { refreshToken: 'mock' }); // Revoke token on server ideally
+  localStorage.removeItem('zorvyn_token');
+  localStorage.removeItem('zorvyn_user');
+  token = null;
+  currentUser = null;
+  document.getElementById('DP').style.display='none';
+  const lp=document.getElementById('LP');lp.style.display='flex';lp.style.opacity='0';lp.style.transform='scale(.97)';
+  requestAnimationFrame(()=>{lp.style.transition='opacity .4s ease,transform .4s ease';lp.style.opacity='1';lp.style.transform='scale(1)'});
 }
 
-// ── Transactions ──────────────────────────────────────────────────────────────
-function bindTransactions() {
-  let t;
-  el('filter-search').addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { txPage=1; loadTransactions(); }, 400); });
-  ['filter-type','filter-category','filter-start','filter-end'].forEach(id => el(id).addEventListener('change', () => { txPage=1; loadTransactions(); }));
-  el('filter-reset').addEventListener('click', () => {
-    ['filter-search','filter-start','filter-end'].forEach(id => el(id).value='');
-    ['filter-type','filter-category'].forEach(id => el(id).value='');
-    txPage=1; loadTransactions();
-  });
-  el('pag-prev').addEventListener('click', () => { if(txPage>1){txPage--;loadTransactions();} });
-  el('pag-next').addEventListener('click', () => { txPage++; loadTransactions(); });
-  el('add-record-btn').addEventListener('click', () => openModal());
-  el('modal-close').addEventListener('click', closeModal);
-  el('modal-cancel').addEventListener('click', closeModal);
-  el('record-modal').addEventListener('click', e => { if(e.target===el('record-modal')) closeModal(); });
-  el('record-form').addEventListener('submit', saveRecord);
+function setupUser() {
+  document.getElementById('sbAva').textContent=currentUser.name.charAt(0).toUpperCase();
+  document.getElementById('sbName').textContent=currentUser.name;
+  document.getElementById('sbRole').textContent=currentUser.role;
+}
+
+['eIn','pIn'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()})
+});
+
+/* ─── DATA LOADING ─── */
+const BMAP={Salary:'bsal',Rent:'bren',Freelance:'bfre',Utilities:'buti',Groceries:'bgro',Transport:'btra',Investment:'binv'};
+
+async function loadDashboard() {
+  const sumRes = await apiFetch(`/dashboard/summary?period=${currentPeriod}`);
+  if(sumRes && sumRes.success) {
+    const d = sumRes.data;
+    document.getElementById('kTotalIncome').dataset.t = d.totalIncome;
+    document.getElementById('kTotalExpenses').dataset.t = d.totalExpenses;
+    document.getElementById('kNetBalance').dataset.t = d.netBalance;
+    document.getElementById('kRecordCount').dataset.t = d.recordCount;
+    animCounters();
+  }
+
+  const catRes = await apiFetch(`/dashboard/categories?period=${currentPeriod}`);
+  if(catRes && catRes.success) {
+    const exps = catRes.data.filter(c=>c.expense>0).map(c=>({ category: c.category, total: c.expense })).sort((a,b)=>b.total-a.total);
+    let totExp = exps.reduce((a,b)=>a+b.total, 0);
+    document.getElementById('catTotalExp').textContent = `₹${totExp.toLocaleString('en-IN')}`;
+    
+    // Ring drawing
+    const cv=document.getElementById('ringC');
+    if (cv) {
+      const ctx=cv.getContext('2d');
+      const colors = ['#FF3D71','#40C4FF','#FFD166','#B388FF','#FF8C42'];
+      ctx.clearRect(0,0,150,150);
+      let start=-Math.PI/2;
+      const total = totExp || 1;
+      exps.forEach((s,i)=>{
+        const ang=(s.total/total)*Math.PI*2;
+        ctx.beginPath();ctx.arc(75,75,60,start,start+ang-.04);
+        ctx.strokeStyle=colors[i%colors.length];ctx.lineWidth=16;ctx.lineCap='round';
+        ctx.shadowBlur=12;ctx.shadowColor=colors[i%colors.length];ctx.stroke();
+        ctx.shadowBlur=0;start+=ang;
+      });
+
+      // Categories List
+      const catList = document.getElementById('catList');
+      catList.innerHTML = '';
+      exps.forEach((s, i) => {
+        let pct = ((s.total/total)*100).toFixed(0);
+        let c = colors[i%colors.length];
+        catList.innerHTML += `<div class="crow">
+          <div class="cdot" style="background:${c}"></div>
+          <div class="cname">${s.category}</div>
+          <div class="cbg"><div class="cfill" style="background:${c}" data-w="${pct}%"></div></div>
+          <div class="camt" style="color:${c}">−₹${s.total.toLocaleString()}</div>
+        </div>`;
+      });
+      setTimeout(() => document.querySelectorAll('[data-w]').forEach(el=>el.style.width=el.dataset.w), 100);
+    }
+  }
+
+  const recRes = await apiFetch(`/dashboard/recent?limit=8`);
+  if(recRes && recRes.success) {
+    const b = document.getElementById('tb1');
+    b.innerHTML = '';
+    recRes.data.forEach((t,i) => {
+      const pos = t.type==='INCOME';
+      const catClass = BMAP[t.category]||'bgro';
+      const d = new Date(t.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      b.innerHTML += `<tr class="txrow" style="animation-delay:${i*.04}s" data-type="${t.type}">
+        <td class="tddate">${d}</td>
+        <td class="tddesc">${t.description||t.category}</td>
+        <td><span class="bdg ${catClass}">${t.category}</span></td>
+        <td class="tdamt ${pos?'pos':'neg'}">${pos?'+':'-'}₹${Math.abs(t.amount).toLocaleString('en-IN')}</td>
+      </tr>`;
+    });
+  }
 }
 
 async function loadTransactions() {
-  const tbody = el('transactions-table-body');
-  tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">Loading…</td></tr>`;
-  const p = new URLSearchParams({ page:txPage, limit:10, sortBy:'date', sortOrder:'desc' });
-  const s = el('filter-search').value.trim();
-  const t = el('filter-type').value;
-  const c = el('filter-category').value;
-  const sd= el('filter-start').value;
-  const ed= el('filter-end').value;
-  if(s)  p.set('search',s);
-  if(t)  p.set('type',t);
-  if(c)  p.set('category',c);
-  if(sd) p.set('startDate',sd);
-  if(ed) p.set('endDate',ed);
-
-  const data = await get(`/records?${p}`);
-  if (!data?.success) { tbody.innerHTML=`<tr><td colspan="6" class="tbl-empty">Failed to load.</td></tr>`; return; }
-
-  const isAdmin = currentUser?.role==='ADMIN';
-  const canWrite= ['ANALYST','ADMIN'].includes(currentUser?.role);
-
-  if (!data.data.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="tbl-empty">No transactions found.</td></tr>`;
-  } else {
-    tbody.innerHTML = data.data.map(r => {
-      const isInc  = r.type==='INCOME';
-      const isMine = r.author?.id===currentUser?.id;
-      const canEdit= canWrite && (isMine||isAdmin);
-      const actions= canEdit
-        ? `<div class="act-btns"><button class="tbl-btn" onclick="openModal('${r.id}')">Edit</button><button class="tbl-btn del" onclick="doDelete('${r.id}')">Delete</button></div>`
-        : `<span style="color:var(--txt-3);font-size:12px">View only</span>`;
-      return `<tr>
-        <td style="color:var(--txt-2)">${fmtDate(r.date)}</td>
-        <td style="font-weight:500">${r.description||'—'}</td>
-        <td><span class="chip chip-cat">${r.category}</span></td>
-        <td><span class="chip ${isInc?'chip-income':'chip-expense'}">${r.type}</span></td>
-        <td class="${isInc?'tbl-inc':'tbl-exp'}">${isInc?'+':'-'}${fmt(r.amount)}</td>
-        <td>${actions}</td>
+  const recRes = await apiFetch(`/records?limit=50`);
+  if(recRes && recRes.success) {
+    const b = document.getElementById('tb2');
+    b.innerHTML = '';
+    recRes.data.forEach((t,i) => {
+      const pos = t.type==='INCOME';
+      const catClass = BMAP[t.category]||'bgro';
+      const d = new Date(t.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      b.innerHTML += `<tr class="txrow" style="animation-delay:${i*.02}s" data-type="${t.type}">
+        <td class="tddate">${d}</td>
+        <td class="tddesc">${t.description||t.category}</td>
+        <td><span class="bdg ${catClass}">${t.category}</span></td>
+        <td class="tdby">${t.author ? t.author.name : 'Unknown'}</td>
+        <td class="tdamt ${pos?'pos':'neg'}">${pos?'+':'-'}₹${Math.abs(t.amount).toLocaleString('en-IN')}</td>
       </tr>`;
-    }).join('');
+    });
   }
-
-  const m = data.meta;
-  el('pag-info').textContent = `Page ${m.page} of ${m.totalPages||1}`;
-  el('pag-prev').disabled = m.page <= 1;
-  el('pag-next').disabled = m.page >= (m.totalPages||1);
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────────────
-async function openModal(id = null) {
-  el('modal-error').textContent = '';
-  el('rec-id').value = '';
-  el('record-form').reset();
-  el('rec-date').value = new Date().toISOString().split('T')[0];
-  el('modal-title').textContent = id ? 'Edit Transaction' : 'New Transaction';
+/* ─── COUNTER ─── */
+function animCounters(){
+  document.querySelectorAll('[data-t]').forEach(el=>{
+    const target=+el.dataset.t,pfx=el.dataset.p||'';
+    let v=0;const step=target/65;
+    const iv=setInterval(()=>{
+      v=target < 100 && target > 0 ? v + (target/15) : Math.min(v+step,target);
+      if (v >= target) v = target;
+      el.textContent=pfx+(pfx==='₹'?Math.round(v).toLocaleString('en-IN'):Math.round(v));
+      if(v>=target)clearInterval(iv);
+    },14);
+  });
+}
 
-  if (id) {
-    const d = await get(`/records/${id}`);
-    if (d?.success) {
-      const r = d.data;
-      el('rec-id').value   = r.id;
-      el('rec-amount').value = r.amount;
-      el('rec-type').value   = r.type;
-      el('rec-category').value = r.category;
-      el('rec-date').value   = r.date.split('T')[0];
-      el('rec-desc').value   = r.description || '';
+function doFilterRecent(f,el){
+  document.querySelectorAll('#vOverview .txf').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('#tb1 .txrow').forEach(tr => {
+    if(f === 'all' || tr.dataset.type === f) tr.style.display = '';
+    else tr.style.display = 'none';
+  });
+}
+function doFilterTx(f,el){
+  document.querySelectorAll('#vTransactions .txf').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('#tb2 .txrow').forEach(tr => {
+    if(f === 'all' || tr.dataset.type === f) tr.style.display = '';
+    else tr.style.display = 'none';
+  });
+}
+
+/* ─── BIG BAR CHART ─── */
+async function drawBigBar(){
+  const trRes = await apiFetch(`/dashboard/trends/monthly?months=7`);
+  if (!trRes || !trRes.success) return;
+  const trends = trRes.data.reverse();
+
+  const mContainer = document.getElementById('bigCMonths');
+  mContainer.innerHTML = '';
+  trends.forEach(t => {
+    const mName = new Date(t.month + '-01').toLocaleString('en', {month: 'short'});
+    mContainer.innerHTML += `<div class="cm">${mName.toUpperCase()}</div>`;
+  });
+
+  const income = trends.map(t=>t.income);
+  const expense = trends.map(t=>t.expense);
+
+  const cv=document.getElementById('bigC');if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const W=cv.offsetWidth,H=cv.offsetHeight;cv.width=W;cv.height=H;
+  const max=Math.max(...income, ...expense, 100);const mths=income.length;
+  const gW=(W-16)/mths,bW=gW*.28;
+  let prog=0;
+  const fr=()=>{
+    ctx.clearRect(0,0,W,H);prog=Math.min(prog+.04,1);
+    const e2=1-Math.pow(1-prog,3);
+    [.25,.5,.75,1].forEach(f=>{const y=(1-f)*(H-4)+2;ctx.beginPath();ctx.moveTo(8,y);ctx.lineTo(W-8,y);ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;ctx.stroke()});
+    income.forEach((v,i)=>{
+      const x=8+i*gW+gW*.06;
+      const iH=(v/max)*(H-8)*e2;const eH=(expense[i]/max)*(H-8)*e2;
+      const gi=ctx.createLinearGradient(0,H-iH,0,H);gi.addColorStop(0,'rgba(0,255,135,0.9)');gi.addColorStop(1,'rgba(0,255,135,0.15)');
+      ctx.fillStyle=gi;ctx.beginPath();ctx.roundRect(x,H-iH,bW,iH,3);ctx.fill();
+      const ge=ctx.createLinearGradient(0,H-eH,0,H);ge.addColorStop(0,'rgba(255,61,113,0.85)');ge.addColorStop(1,'rgba(255,61,113,0.1)');
+      ctx.fillStyle=ge;ctx.beginPath();ctx.roundRect(x+bW+4,H-eH,bW,eH,3);ctx.fill();
+    });
+    if(prog<1)requestAnimationFrame(fr);
+  };fr();
+}
+
+/* ─── ANALYTICS CHARTS ─── */
+async function drawAnalytics(){
+  const trRes = await apiFetch(`/dashboard/trends/monthly?months=7`);
+  if (!trRes || !trRes.success) return;
+  const trends = trRes.data.reverse();
+
+  // Line
+  const lc=document.getElementById('lchart');if(!lc)return;
+  const lctx=lc.getContext('2d');lc.width=lc.offsetWidth;lc.height=lc.offsetHeight;
+  const W=lc.width,H=lc.height;
+  const d=trends.map(t=>t.income - t.expense);
+  const mn=Math.min(...d, 0),mx=Math.max(...d, 100),rng=mx-mn;
+  const pts=d.map((v,i)=>({x:(i/(d.length-1))*(W-20)+10,y:(H-12)-((v-mn)/rng)*(H-22)+4}));
+  const gr=lctx.createLinearGradient(0,0,0,H);gr.addColorStop(0,'rgba(0,255,135,0.3)');gr.addColorStop(1,'rgba(0,255,135,0)');
+  lctx.beginPath();pts.forEach((p,i)=>i===0?lctx.moveTo(p.x,p.y):lctx.lineTo(p.x,p.y));
+  lctx.lineTo(pts[pts.length-1].x,H);lctx.lineTo(pts[0].x,H);lctx.closePath();lctx.fillStyle=gr;lctx.fill();
+  lctx.beginPath();pts.forEach((p,i)=>i===0?lctx.moveTo(p.x,p.y):lctx.lineTo(p.x,p.y));
+  lctx.strokeStyle='#00FF87';lctx.lineWidth=2.5;lctx.lineJoin='round';lctx.stroke();
+  pts.forEach(p=>{lctx.beginPath();lctx.arc(p.x,p.y,4,0,Math.PI*2);lctx.fillStyle='#04050A';lctx.fill();lctx.beginPath();lctx.arc(p.x,p.y,3,0,Math.PI*2);lctx.fillStyle='#00FF87';lctx.fill()});
+  
+  const mContainer = document.getElementById('lchartMonths');
+  mContainer.innerHTML = '';
+  trends.forEach(t => {
+    const mName = new Date(t.month + '-01').toLocaleString('en', {month: 'short'});
+    mContainer.innerHTML += `<span style="font-size:8px;letter-spacing:1px;color:var(--muted)">${mName.toUpperCase()}</span>`;
+  });
+
+  // Bar2
+  const bc=document.getElementById('bchart2');if(!bc)return;
+  const bctx=bc.getContext('2d');bc.width=bc.offsetWidth;bc.height=bc.offsetHeight;
+  const bW2=bc.width,bH2=bc.height;
+  const inc=$inc=trends.map(t=>t.income);const exp=$exp=trends.map(t=>t.expense);
+  const bmax=Math.max(...inc, ...exp, 100);const gW2=bW2/inc.length;const bw3=gW2*.3;
+  let p2=0;
+  const fr2=()=>{
+    bctx.clearRect(0,0,bW2,bH2);p2=Math.min(p2+.05,1);const e2=1-Math.pow(1-p2,3);
+    inc.forEach((v,i)=>{
+      const x=i*gW2+gW2*.1;const ih=(v/bmax)*(bH2-8)*e2;const eh=(exp[i]/bmax)*(bH2-8)*e2;
+      const g1=bctx.createLinearGradient(0,0,0,bH2);g1.addColorStop(0,'rgba(0,255,135,.9)');g1.addColorStop(1,'rgba(0,255,135,.15)');
+      bctx.fillStyle=g1;bctx.beginPath();bctx.roundRect(x,bH2-ih,bw3,ih,3);bctx.fill();
+      const g2=bctx.createLinearGradient(0,0,0,bH2);g2.addColorStop(0,'rgba(255,61,113,.85)');g2.addColorStop(1,'rgba(255,61,113,.1)');
+      bctx.fillStyle=g2;bctx.beginPath();bctx.roundRect(x+bw3+4,bH2-eh,bw3,eh,3);bctx.fill();
+    });
+    if(p2<1)requestAnimationFrame(fr2);
+  };fr2();
+
+  // Dist (Neural Orbit)
+  const catRes = await apiFetch(`/dashboard/categories?period=year`);
+  if(catRes && catRes.success) {
+    const exps = catRes.data.filter(c=>c.expense>0).map(c=>({ category: c.category, total: c.expense })).sort((a,b)=>b.total-a.total);
+    const total = exps.reduce((a,b)=>a+b.total, 0) || 1;
+    const distContainer = document.getElementById('expDist');
+    distContainer.innerHTML = '';
+    distContainer.style.display = 'block';
+
+    const canvas = document.createElement('canvas');
+    const W = distContainer.offsetWidth || 800; // Fallback
+    canvas.width = W;
+    canvas.height = 340;
+    canvas.style.width = '100%';
+    canvas.style.height = '340px';
+    canvas.style.borderRadius = '12px';
+    canvas.style.border = '1px solid var(--border)';
+    canvas.style.background = 'radial-gradient(circle at center, rgba(0,255,135,0.03) 0%, var(--bg1) 100%)';
+    distContainer.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    const colors = ['#FF3D71','#40C4FF','#FFD166','#B388FF','#FF8C42', '#00FF87'];
+
+    const nodes = exps.map((c, i) => {
+      const weight = Math.max(0.1, c.total / total);
+      return {
+        cat: c.category, amt: c.total, r: 8 + (weight * 35),
+        col: colors[i % colors.length],
+        angle: Math.random() * Math.PI * 2,
+        speed: (Math.random() * 0.002) + 0.001 * (i%2==0?1:-1),
+        dist: 70 + Math.random() * 50 + (i*15)
+      };
+    });
+
+    const cx = W / 2, cy = 170;
+    let hn = null;
+
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+      const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+      hn = null;
+      nodes.forEach(n => {
+        const nx = cx + Math.cos(n.angle) * n.dist, ny = cy + Math.sin(n.angle) * n.dist;
+        if (Math.hypot(mx - nx, my - ny) < n.r + 10) hn = n;
+      });
+      canvas.style.cursor = hn ? 'pointer' : 'default';
+    });
+
+    const fr = () => {
+      if(!canvas.offsetParent) { requestAnimationFrame(fr); return; } // Pause if hidden
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+      const grad = ctx.createRadialGradient(cx, cy, 5, cx, cy, 20);
+      grad.addColorStop(0, '#fff'); grad.addColorStop(1, 'rgba(0, 255, 135, 0.4)');
+      ctx.fillStyle = grad; ctx.shadowBlur = 25; ctx.shadowColor = '#00FF87'; ctx.fill(); ctx.shadowBlur = 0;
+
+      const t = Date.now() / 1000;
+      ctx.beginPath(); ctx.arc(cx, cy, 20 + (Math.sin(t*3)*4), 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(0, 255, 135, 0.5)'; ctx.lineWidth = 1; ctx.stroke();
+      
+      ctx.fillStyle = 'rgba(0, 255, 135, 0.7)';
+      ctx.font = 'bold 9px JetBrains Mono'; ctx.textAlign = 'center';
+      ctx.fillText('OUTFLOW', cx, cy + 34);
+
+      nodes.forEach((n, i) => {
+        n.angle += n.speed;
+        const nx = cx + Math.cos(n.angle) * n.dist, ny = cy + Math.sin(n.angle) * n.dist;
+
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(nx, ny);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${hn===n ? 0.3 : 0.05})`;
+        ctx.lineWidth = hn===n ? 2 : 1; ctx.stroke();
+
+        for(let j=i+1; j<nodes.length; j++) {
+           const o = nodes[j], ox = cx + Math.cos(o.angle) * o.dist, oy = cy + Math.sin(o.angle) * o.dist;
+           if (Math.hypot(nx-ox, ny-oy) < 110) {
+              ctx.beginPath(); ctx.moveTo(nx, ny); ctx.lineTo(ox, oy);
+              ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.stroke();
+           }
+        }
+      });
+
+      nodes.forEach((n) => {
+        const nx = cx + Math.cos(n.angle) * n.dist, ny = cy + Math.sin(n.angle) * n.dist;
+        ctx.beginPath(); ctx.arc(nx, ny, n.r + (hn===n ? 3 : 0), 0, Math.PI*2);
+        ctx.fillStyle = n.col; ctx.shadowBlur = hn===n ? 20 : 10; ctx.shadowColor = n.col; ctx.fill(); ctx.shadowBlur = 0;
+
+        if (hn === n || n.r > 12) {
+          ctx.fillStyle = '#fff'; ctx.font = hn===n ? '11px JetBrains Mono' : '9px JetBrains Mono';
+          ctx.fillText(n.cat.toUpperCase(), nx, ny - n.r - 6);
+          if(hn === n) {
+             ctx.fillStyle = n.col; ctx.fillText('₹' + n.amt.toLocaleString('en-IN'), nx, ny + n.r + 14);
+          }
+        }
+      });
+
+      requestAnimationFrame(fr);
     }
+    fr();
   }
-  el('record-modal').classList.remove('hidden');
-}
-function closeModal() { el('record-modal').classList.add('hidden'); }
-
-async function saveRecord(e) {
-  e.preventDefault();
-  const id = el('rec-id').value;
-  const payload = {
-    amount:      parseFloat(el('rec-amount').value),
-    type:        el('rec-type').value,
-    category:    el('rec-category').value,
-    date:        el('rec-date').value,
-    description: el('rec-desc').value,
-  };
-  const btn = el('modal-save');
-  btn.textContent = 'Saving…'; btn.disabled = true;
-  const data = id ? await patch(`/records/${id}`, payload) : await post('/records', payload);
-  btn.textContent = 'Save Transaction'; btn.disabled = false;
-
-  if (data?.success) { closeModal(); toast(id?'Transaction updated':'Transaction created','success'); loadTransactions(); }
-  else { el('modal-error').textContent = data?.message || 'Failed to save.'; }
 }
 
-async function doDelete(id) {
-  if (!confirm('Delete this transaction?')) return;
-  const d = await del(`/records/${id}`);
-  if (d?.success) { toast('Transaction deleted','success'); loadTransactions(); }
-  else { toast(d?.message || 'Failed to delete','error'); }
+/* ─── TICKER ─── */
+function buildTicker(){
+  const items=[
+    {n:'NIFTY 50',v:'22,418.35',c:'+0.48%',u:true},{n:'SENSEX',v:'73,961.42',c:'+0.52%',u:true},
+    {n:'USD/INR',v:'83.42',c:'-0.12%',u:false},{n:'GOLD',v:'₹72,430',c:'+0.31%',u:true},
+    {n:'RELIANCE',v:'₹2,872',c:'+1.2%',u:true},{n:'TCS',v:'₹3,541',c:'-0.35%',u:false},
+    {n:'HDFC BANK',v:'₹1,642',c:'+0.87%',u:true},{n:'INFOSYS',v:'₹1,389',c:'+0.61%',u:true},
+    {n:'BITCOIN',v:'$83,542',c:'+2.14%',u:true},{n:'CRUDE OIL',v:'$74.38',c:'-0.82%',u:false},
+    {n:'NIFTY BANK',v:'48,221',c:'+0.33%',u:true},{n:'WIPRO',v:'₹462',c:'+0.45%',u:true},
+  ];
+  const html=items.map(i=>`<span class="titem"><span class="tname">${i.n}</span>${i.v}<span class="${i.u?'tup':'tdn'}">${i.c}</span></span>`).join('');
+  const t=document.getElementById('ttrack');t.innerHTML=html+html;
 }
 
-// ── Analytics ─────────────────────────────────────────────────────────────────
-async function loadAnalytics() {
-  const [sum, trend, cats] = await Promise.all([
-    get('/dashboard/summary?period=year'),
-    get(`/dashboard/trends/monthly?months=${analyticsPeriod}`),
-    get('/dashboard/categories?period=year'),
-  ]);
+/* ─── INIT DASHBOARD ─── */
+function initDash(){
+  loadDashboard();
+  loadTransactions();
+  buildTicker();
+  setTimeout(()=>{
+    drawSpk('ks1',[40,55,48,65,72,68,82,78,88,97],'#00FF87',300,40);
+    drawSpk('ks2',[5200,6800,5900,7100,6400,8200,7600],'#FF3D71',300,40);
+    drawSpk('ks3',[32,42,38,56,63,60,74,80,89,89.4],'#B388FF',300,40);
+    drawSpk('ks4',[2,3,2,4,3,5,4,5,6,6],'#FF8C42',300,40);
+    drawBigBar();
+  },400);
+}
 
-  if (sum?.success) {
-    const d = sum.data;
-    animateNumber('an-income',  d.totalIncome);
-    animateNumber('an-expense', d.totalExpenses);
-    animateNumber('an-balance', d.netBalance);
-    const rate = d.totalIncome > 0 ? Math.round(((d.totalIncome - d.totalExpenses) / d.totalIncome) * 100) : 0;
-    el('an-rate').textContent = `${rate}%`;
-    el('an-rate').style.color = rate >= 0 ? 'var(--income)' : 'var(--expense)';
+/* ─── NAV ─── */
+const VIEWS={overview:'vOverview',transactions:'vTransactions',analytics:'vAnalytics',settings:'vSettings'};
+const TITLES={overview:'FINANCIAL OVERVIEW',transactions:'TRANSACTIONS',analytics:'ANALYTICS',settings:'SETTINGS'};
+const SUBS={overview:'',transactions:'All Records',analytics:'Deep Insights',settings:'Preferences'};
+function goView(v,el){
+  Object.values(VIEWS).forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none'});
+  const vEl=document.getElementById(VIEWS[v]);if(vEl)vEl.style.display='block';
+  document.querySelectorAll('.nav').forEach(n=>n.classList.remove('on'));el.classList.add('on');
+  document.getElementById('pvTitle').textContent=TITLES[v];
+  if(v==='overview') {
+    document.getElementById('pvSub').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  } else {
+    document.getElementById('pvSub').textContent=SUBS[v];
   }
-
-  if (trend?.success) renderBarChart(trend.data);
-  if (cats?.success)  renderCategoryList(cats.data, 'analytics-category-list');
+  if(v==='analytics')setTimeout(drawAnalytics,100);
+  if(v==='transactions')loadTransactions();
+}
+function setTT(period,el){
+  document.querySelectorAll('.tt').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  currentPeriod = period;
+  loadDashboard();
 }
 
-function renderBarChart(data) {
-  const container = el('bar-chart');
-  if (!data?.length) { container.innerHTML = '<p class="empty-msg">No trend data.</p>'; return; }
-  const maxVal = Math.max(...data.flatMap(d => [d.income, d.expense]), 1);
-  const H = 150;
-  const scale = v => Math.max((v / maxVal) * H, v > 0 ? 4 : 0);
-
-  container.innerHTML = data.map(d => {
-    const [yr, mo] = d.month.split('-');
-    const lbl = new Date(parseInt(yr), parseInt(mo)-1).toLocaleString('default', { month:'short' });
-    return `<div class="bar-group">
-      <div class="bar-pair">
-        <div class="bar bar-inc" style="height:${scale(d.income)}px"  data-tip="${fmt(d.income)} income"></div>
-        <div class="bar bar-exp" style="height:${scale(d.expense)}px" data-tip="${fmt(d.expense)} expense"></div>
-      </div>
-      <span class="bar-month-label">${lbl}</span>
-    </div>`;
-  }).join('');
+/* ─── TOAST ─── */
+function showToast(ico,title,body){
+  document.getElementById('tIco').textContent=ico;
+  document.getElementById('tTitle').textContent=title;
+  document.getElementById('tBody').textContent=body;
+  const t=document.getElementById('toast');
+  t.classList.add('in');
+  const bar=t.querySelector('.tbar');bar.style.animation='none';void bar.offsetWidth;bar.style.animation='tbp 3.5s linear forwards';
+  setTimeout(()=>t.classList.remove('in'),3600);
 }
-
-// ── Settings ──────────────────────────────────────────────────────────────────
-async function loadSettings() {
-  const u = currentUser;
-  el('settings-avatar').textContent = u.name.charAt(0).toUpperCase();
-  el('settings-name').textContent   = u.name;
-  el('settings-email').textContent  = u.email;
-  el('settings-role').textContent   = u.role;
-
-  const card = el('admin-users-card');
-  if (u.role !== 'ADMIN') { card.style.display='none'; return; }
-  card.style.display = '';
-
-  const data = await get('/users?limit=50');
-  const tbody = el('users-table-body');
-  if (!data?.success) { tbody.innerHTML=`<tr><td colspan="5" class="tbl-empty">Failed to load.</td></tr>`; return; }
-
-  tbody.innerHTML = data.data.map(user => {
-    const active= user.status==='ACTIVE';
-    const isSelf= user.id===currentUser.id;
-    const ctrl  = isSelf ? '—' : `<button class="tbl-btn${active?' del':''}" onclick="toggleUser('${user.id}','${user.status}')">${active?'Deactivate':'Activate'}</button>`;
-    return `<tr>
-      <td style="font-weight:600">${user.name}${isSelf?' <small style="color:var(--txt-3)">(you)</small>':''}</td>
-      <td style="color:var(--txt-2)">${user.email}</td>
-      <td><span class="chip chip-cat">${user.role}</span></td>
-      <td><span class="chip ${active?'chip-income':'chip-expense'}">${user.status}</span></td>
-      <td>${ctrl}</td>
-    </tr>`;
-  }).join('');
-}
-
-async function toggleUser(id, status) {
-  const deact = status === 'ACTIVE';
-  const data  = deact
-    ? await apiFetch(`/users/${id}/deactivate`, { method:'PATCH' })
-    : await patch(`/users/${id}`, { status:'ACTIVE' });
-  if (data?.success) { toast(`User ${deact?'deactivated':'activated'}`, 'success'); loadSettings(); }
-  else { toast(data?.message || 'Action failed', 'error'); }
-}
-
-// ── Animated Number Counter ───────────────────────────────────────────────────
-function animateNumber(id, target) {
-  const el2 = el(id);
-  const start = 0;
-  const duration = 900;
-  const startTime = performance.now();
-  const isNeg = target < 0;
-  const abs   = Math.abs(target);
-
-  function tick(now) {
-    const pct = Math.min((now - startTime) / duration, 1);
-    const eased = 1 - Math.pow(1 - pct, 3); // ease-out cubic
-    const val   = abs * eased;
-    el2.textContent = (isNeg ? '-' : '') + fmt(val);
-    if (pct < 1) requestAnimationFrame(tick);
-    else el2.textContent = (isNeg ? '-' : '') + fmt(abs);
-  }
-  requestAnimationFrame(tick);
-}
-
-// ── Toast ─────────────────────────────────────────────────────────────────────
-function toast(msg, type = 'info') {
-  const icons = { success:'✅', error:'❌', info:'ℹ️' };
-  const c = el('toast-container');
-  const t = document.createElement('div');
-  t.className = `toast ${type}`;
-  t.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
-  c.appendChild(t);
-  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 3000);
-}
-
-// ── Utils ─────────────────────────────────────────────────────────────────────
-const el      = id => document.getElementById(id);
-const fmt     = v  => new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:0 }).format(v||0);
-const fmtDate = s  => new Date(s).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
